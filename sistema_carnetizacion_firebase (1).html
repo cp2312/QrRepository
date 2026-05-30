@@ -1,0 +1,1000 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAqpx-Aaou8XBWhAKb3BTKADJ9T6TeJqFE",
+    authDomain: "iet-santacruz-motavita.firebaseapp.com",
+    projectId: "iet-santacruz-motavita",
+    storageBucket: "iet-santacruz-motavita.firebasestorage.app",
+    messagingSenderId: "1094145004611",
+    appId: "1:1094145004611:web:97e298617f2bf5148a70f6",
+    measurementId: "G-VVJRFESWY9"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  // Expose to global scope
+  window._db   = db;
+  window._auth = auth;
+  window._fs   = { collection, doc, getDocs, setDoc, deleteDoc, onSnapshot, query, orderBy };
+
+  window.loginGoogle = async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch(e) {
+      alert('Error al iniciar sesión: ' + e.message);
+    }
+  };
+
+  window.cerrarSesion = async () => {
+    if(!confirm('¿Cerrar sesión?')) return;
+    await signOut(auth);
+  };
+
+  // ── Correo del administrador ──────────────────────────────────────────────
+  const ADMIN_EMAIL = 'juanjos2621@gmail.com'; // ← cambia esto por tu correo
+
+  // Escuchar cambios de autenticación
+  onAuthStateChanged(auth, async user => {
+    if(user) {
+      if(user.email !== ADMIN_EMAIL) {
+        // No es el admin → cerrar sesión y mostrar error
+        await signOut(auth);
+        document.getElementById('login-error').style.display = 'block';
+        return;
+      }
+      // Es el admin → mostrar app
+      document.getElementById('login-error').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-app').style.display = 'flex';
+      document.getElementById('user-name').textContent = user.displayName || user.email;
+      document.getElementById('user-avatar').textContent = (user.displayName || user.email)[0].toUpperCase();
+      document.getElementById('fb-status').style.display = 'block';
+      window.dispatchEvent(new Event('firebase-ready'));
+    } else {
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('main-app').style.display = 'none';
+      document.getElementById('fb-status').style.display = 'none';
+    }
+  });
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans, 'Segoe UI', sans-serif); background: var(--color-background-tertiary, #f5f5f0); color: var(--color-text-primary, #111); min-height: 100vh; }
+  
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+  
+  .header { background: #0F6E56; color: white; padding: 0; display: flex; align-items: stretch; border-bottom: 3px solid #085041; }
+  .header-brand { display: flex; align-items: center; gap: 12px; padding: 14px 20px; }
+  .header-brand .logo { width: 38px; height: 38px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .header-brand .logo i { color: #0F6E56; font-size: 20px; }
+  .header-title { font-size: 15px; font-weight: 600; line-height: 1.2; }
+  .header-title span { font-size: 11px; font-weight: 400; opacity: 0.8; display: block; }
+  
+  .nav { display: flex; gap: 0; margin-left: auto; }
+  .nav-btn { background: none; border: none; color: rgba(255,255,255,0.75); padding: 14px 16px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; border-bottom: 3px solid transparent; transition: all 0.15s; }
+  .nav-btn:hover { color: white; background: rgba(255,255,255,0.1); }
+  .nav-btn.active { color: white; border-bottom-color: #9FE1CB; }
+  .nav-btn i { font-size: 16px; }
+  
+  .content { flex: 1; padding: 20px; max-width: 1100px; margin: 0 auto; width: 100%; }
+  
+  .page { display: none; }
+  .page.active { display: block; }
+  
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .page-header h2 { font-size: 20px; font-weight: 600; }
+  .page-header p { font-size: 13px; color: var(--color-text-secondary, #666); margin-top: 2px; }
+  
+  .btn { padding: 8px 16px; border-radius: 8px; border: 0.5px solid; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; transition: all 0.15s; }
+  .btn-primary { background: #0F6E56; color: white; border-color: #0F6E56; }
+  .btn-primary:hover { background: #085041; }
+  .btn-secondary { background: var(--color-background-primary, white); color: var(--color-text-primary, #111); border-color: var(--color-border-secondary, #ccc); }
+  .btn-secondary:hover { background: var(--color-background-secondary, #f0f0f0); }
+  .btn-danger { background: #fff; color: #A32D2D; border-color: #F09595; }
+  .btn-danger:hover { background: #FCEBEB; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  
+  .card { background: var(--color-background-primary, white); border: 0.5px solid var(--color-border-tertiary, #e0e0e0); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: var(--color-background-secondary, #f5f5f0); border-radius: 10px; padding: 16px; }
+  .stat-label { font-size: 12px; color: var(--color-text-secondary, #666); margin-bottom: 6px; }
+  .stat-value { font-size: 26px; font-weight: 600; }
+  .stat-value.green { color: #0F6E56; }
+  .stat-value.blue { color: #185FA5; }
+  .stat-value.amber { color: #854F0B; }
+  .stat-value.red { color: #A32D2D; }
+  
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 12px; font-weight: 500; color: var(--color-text-secondary, #666); }
+  .form-group input, .form-group select { padding: 8px 10px; border: 0.5px solid var(--color-border-secondary, #ccc); border-radius: 8px; font-size: 13px; background: var(--color-background-primary, white); color: var(--color-text-primary, #111); }
+  .form-group input:focus, .form-group select:focus { outline: none; border-color: #0F6E56; box-shadow: 0 0 0 2px rgba(15,110,86,0.15); }
+  
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--color-border-tertiary, #e0e0e0); font-size: 11px; font-weight: 600; color: var(--color-text-secondary, #666); text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 10px 12px; border-bottom: 0.5px solid var(--color-border-tertiary, #e0e0e0); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--color-background-secondary, #f9f9f7); }
+  
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 500; }
+  .badge-green { background: #E1F5EE; color: #085041; }
+  .badge-amber { background: #FAEEDA; color: #633806; }
+  .badge-red { background: #FCEBEB; color: #501313; }
+  .badge-blue { background: #E6F1FB; color: #042C53; }
+  .badge-gray { background: #F1EFE8; color: #2C2C2A; }
+  
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: #E1F5EE; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #085041; margin-right: 8px; }
+  
+  .search-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .search-bar input { flex: 1; padding: 8px 12px; border: 0.5px solid var(--color-border-secondary, #ccc); border-radius: 8px; font-size: 13px; background: var(--color-background-primary, white); color: var(--color-text-primary, #111); }
+  .search-bar input:focus { outline: none; border-color: #0F6E56; }
+  
+  .carnet-preview { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+  .carnet-card { width: 320px; background: linear-gradient(135deg, #0F6E56 0%, #085041 60%, #04342C 100%); border-radius: 14px; padding: 0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+  .carnet-header { background: rgba(255,255,255,0.12); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .carnet-school { color: white; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.9; }
+  .carnet-year { color: rgba(255,255,255,0.7); font-size: 10px; }
+  .carnet-body { padding: 16px; }
+  .carnet-photo { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 22px; font-weight: 700; color: white; }
+  .carnet-name { color: white; font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .carnet-info { color: rgba(255,255,255,0.75); font-size: 11px; margin-bottom: 4px; }
+  .carnet-barcode-area { background: white; border-radius: 8px; padding: 10px 12px 6px; margin-top: 12px; display: flex; flex-direction: column; align-items: center; }
+  .carnet-barcode-area svg { max-width: 100%; }
+  .carnet-id { color: #444; font-size: 10px; margin-top: 3px; letter-spacing: 0.05em; font-family: monospace; }
+  
+  .scanner-area { background: var(--color-background-secondary, #f5f5f0); border: 2px dashed var(--color-border-secondary, #ccc); border-radius: 12px; padding: 40px 20px; text-align: center; margin-bottom: 16px; }
+  .scanner-icon { font-size: 48px; color: var(--color-text-secondary, #999); margin-bottom: 12px; }
+  .scanner-input { display: flex; gap: 10px; max-width: 400px; margin: 0 auto; }
+  
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .timeline-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary, #e0e0e0); align-items: center; }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .dot-green { background: #1D9E75; }
+  .dot-red { background: #E24B4A; }
+  .dot-blue { background: #378ADD; }
+  
+  .tabs { display: flex; border-bottom: 1px solid var(--color-border-tertiary, #e0e0e0); margin-bottom: 20px; }
+  .tab { padding: 10px 16px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--color-text-secondary, #666); background: none; border-top: none; border-left: none; border-right: none; font-weight: 500; }
+  .tab.active { color: #0F6E56; border-bottom-color: #0F6E56; }
+  
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  
+  .empty-state { text-align: center; padding: 40px; color: var(--color-text-secondary, #999); }
+  .empty-state i { font-size: 40px; margin-bottom: 12px; display: block; }
+  
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: flex; align-items: center; justify-content: center; display: none; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--color-background-primary, white); border-radius: 14px; padding: 24px; width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto; border: 0.5px solid var(--color-border-tertiary, #e0e0e0); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-header h3 { font-size: 17px; font-weight: 600; }
+  .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-secondary, #666); padding: 4px; }
+
+  .action-bar { display: flex; gap: 8px; }
+
+  @media print {
+    .header, .nav, .page-header .btn, .action-bar { display: none !important; }
+    .carnet-card { box-shadow: none; }
+  }
+
+  @media (max-width: 600px) {
+    .form-row, .form-row.three { grid-template-columns: 1fr; }
+    .nav-btn span { display: none; }
+    .carnet-preview { justify-content: center; }
+  }
+
+  /* ── Login screen ── */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 500;
+    background: linear-gradient(135deg, #0F6E56 0%, #04342C 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .login-card {
+    background: white; border-radius: 20px; padding: 40px 36px;
+    width: 90%; max-width: 380px; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .login-logo {
+    width: 64px; height: 64px; background: #E1F5EE; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; font-size: 32px; color: #0F6E56;
+  }
+  .login-title { font-size: 20px; font-weight: 700; color: #111; margin-bottom: 4px; }
+  .login-sub   { font-size: 13px; color: #666; margin-bottom: 28px; }
+  .btn-google {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600;
+    border: 1.5px solid #ddd; background: white; cursor: pointer; transition: all 0.15s;
+    color: #333;
+  }
+  .btn-google:hover { background: #f8f8f8; border-color: #bbb; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .login-footer { font-size: 11px; color: #aaa; margin-top: 20px; }
+
+  /* ── User chip en header ── */
+  .user-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; margin-left: 8px; border-left: 1px solid rgba(255,255,255,0.15);
+  }
+  .user-chip-avatar {
+    width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: white;
+  }
+  .user-chip-name { font-size: 12px; color: rgba(255,255,255,0.85); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .user-chip-btn  { background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; font-size: 12px; padding: 2px 6px; border-radius: 6px; }
+  .user-chip-btn:hover { color: white; background: rgba(255,255,255,0.1); }
+</style>
+</head>
+<body>
+<!-- Toast de notificaciones -->
+<div id="toast" style="display:none;position:fixed;bottom:20px;right:20px;z-index:999;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,0.12)"></div>
+
+<!-- Indicador Firebase -->
+<div id="fb-status" style="position:fixed;bottom:20px;left:20px;z-index:999;font-size:11px;padding:4px 12px;border-radius:20px;background:#E1F5EE;color:#085041;border:0.5px solid #5DCAA5;display:none">
+  <i class="ti ti-database" style="font-size:11px"></i> Firebase ✓
+</div>
+
+<!-- PANTALLA DE LOGIN -->
+<div id="login-screen" style="display:flex">
+  <div class="login-card">
+    <div class="login-logo"><i class="ti ti-school"></i></div>
+    <div class="login-title">I.E.T. Santa Cruz de Motavita</div>
+    <div class="login-sub">Sistema de Carnetización Estudiantil<br>Inicia sesión para continuar</div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <!-- Ícono Google -->
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continuar con Google
+    </button>
+    <div id="login-error" style="display:none;margin-top:14px;padding:10px 14px;background:#FCEBEB;border:0.5px solid #F09595;border-radius:8px;font-size:12px;color:#A32D2D">
+      <i class="ti ti-shield-x"></i> Acceso denegado. Solo el administrador autorizado puede ingresar.
+    </div>
+    <div class="login-footer">Solo usuarios autorizados del colegio</div>
+  </div>
+</div>
+
+<!-- APP PRINCIPAL (oculta hasta login) -->
+<div id="main-app" style="display:none;flex-direction:column;min-height:100vh">
+<div class="app">
+  <header class="header">
+    <div class="header-brand">
+      <div class="logo"><i class="ti ti-school"></i></div>
+      <div class="header-title">
+        I.E.T. Santa Cruz de Motavita
+        <span>Sistema de Carnetización Estudiantil</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="nav-btn active" onclick="showPage('dashboard')" data-page="dashboard"><i class="ti ti-layout-dashboard"></i><span>Inicio</span></button>
+      <button class="nav-btn" onclick="showPage('estudiantes')" data-page="estudiantes"><i class="ti ti-users"></i><span>Estudiantes</span></button>
+      <button class="nav-btn" onclick="showPage('carnets')" data-page="carnets"><i class="ti ti-id"></i><span>Carnets</span></button>
+      <button class="nav-btn" onclick="showPage('asistencia')" data-page="asistencia"><i class="ti ti-scan"></i><span>Asistencia</span></button>
+      <button class="nav-btn" onclick="showPage('reportes')" data-page="reportes"><i class="ti ti-chart-bar"></i><span>Reportes</span></button>
+      <!-- Chip de usuario -->
+      <div class="user-chip">
+        <div class="user-chip-avatar" id="user-avatar">?</div>
+        <span class="user-chip-name" id="user-name"></span>
+        <button class="user-chip-btn" onclick="cerrarSesion()" title="Cerrar sesión"><i class="ti ti-logout"></i></button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="content">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div>
+          <h2>Panel Principal</h2>
+          <p>Bienvenido al sistema de carnetización estudiantil</p>
+        </div>
+        <button class="btn btn-primary" onclick="showPage('estudiantes'); openModal()"><i class="ti ti-plus"></i> Nuevo Estudiante</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label"><i class="ti ti-users" style="font-size:13px"></i> Total Estudiantes</div>
+          <div class="stat-value green" id="stat-total">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><i class="ti ti-id" style="font-size:13px"></i> Carnets Generados</div>
+          <div class="stat-value blue" id="stat-carnets">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><i class="ti ti-check" style="font-size:13px"></i> Asistencia Hoy</div>
+          <div class="stat-value amber" id="stat-asistencia">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label"><i class="ti ti-calendar" style="font-size:13px"></i> Fecha</div>
+          <div style="font-size:14px; font-weight:600; margin-top:6px" id="stat-fecha"></div>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="card">
+          <h3 style="font-size:14px; font-weight:600; margin-bottom:14px"><i class="ti ti-clock" style="color:#0F6E56;"></i> Últimos Registros de Asistencia</h3>
+          <div class="timeline" id="timeline-asistencia">
+            <div class="empty-state" style="padding:20px"><i class="ti ti-scan" style="font-size:28px"></i>Sin registros hoy</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:14px; font-weight:600; margin-bottom:14px"><i class="ti ti-chart-pie" style="color:#0F6E56;"></i> Estudiantes por Grado</h3>
+          <div id="grados-chart"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESTUDIANTES -->
+    <div id="page-estudiantes" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Gestión de Estudiantes</h2>
+          <p>Registro y administración de la información estudiantil</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal()"><i class="ti ti-plus"></i> Registrar Estudiante</button>
+      </div>
+      <div class="card">
+        <div class="search-bar">
+          <i class="ti ti-search" style="color:var(--color-text-secondary)"></i>
+          <input type="text" id="search-input" placeholder="Buscar por nombre, documento o grado..." oninput="renderTabla()">
+          <select id="filter-grado" onchange="renderTabla()" style="padding:8px 10px; border:0.5px solid var(--color-border-secondary,#ccc); border-radius:8px; font-size:13px; background:var(--color-background-primary,white);">
+            <option value="">Todos los grados</option>
+            <option>6°</option><option>7°</option><option>8°</option><option>9°</option><option>10°</option><option>11°</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Estudiante</th><th>Documento</th><th>Grado</th><th>Código</th><th>Estado</th><th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-estudiantes">
+            </tbody>
+          </table>
+          <div id="empty-estudiantes" class="empty-state" style="display:none">
+            <i class="ti ti-users"></i>No hay estudiantes registrados
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARNETS -->
+    <div id="page-carnets" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Carnets Estudiantiles</h2>
+          <p>Generación y vista previa de carnets con código de barras</p>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap">
+          <div style="flex:1; min-width:200px">
+            <input type="text" id="carnet-search" placeholder="Buscar estudiante..." oninput="buscarCarnet()" style="width:100%; padding:8px 12px; border:0.5px solid var(--color-border-secondary,#ccc); border-radius:8px; font-size:13px;">
+          </div>
+          <select id="carnet-grado" onchange="buscarCarnet()" style="padding:8px 10px; border:0.5px solid var(--color-border-secondary,#ccc); border-radius:8px; font-size:13px; background:var(--color-background-primary,white);">
+            <option value="">Todos los grados</option>
+            <option>6°</option><option>7°</option><option>8°</option><option>9°</option><option>10°</option><option>11°</option>
+          </select>
+        </div>
+        <div id="carnets-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">
+        </div>
+        <div id="empty-carnets" class="empty-state" style="display:none">
+          <i class="ti ti-id"></i>No hay carnets generados. Registra estudiantes primero.
+        </div>
+      </div>
+    </div>
+
+    <!-- ASISTENCIA -->
+    <div id="page-asistencia" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Control de Asistencia</h2>
+          <p>Registro de entrada y salida mediante código de barras</p>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+        <div>
+          <div class="card">
+            <h3 style="font-size:14px; font-weight:600; margin-bottom:14px"><i class="ti ti-scan" style="color:#0F6E56;"></i> Escanear Código</h3>
+            <div class="scanner-area">
+              <div class="scanner-icon"><i class="ti ti-barcode"></i></div>
+              <p style="font-size:13px; color:var(--color-text-secondary); margin-bottom:16px">Ingresa el código del estudiante o el ID del carnet</p>
+              <div class="scanner-input">
+                <input type="text" id="scan-input" placeholder="Código de barras..." style="flex:1; padding:8px 12px; border:0.5px solid var(--color-border-secondary,#ccc); border-radius:8px; font-size:13px;" onkeydown="if(event.key==='Enter')registrarAsistencia()">
+                <button class="btn btn-primary" onclick="registrarAsistencia()"><i class="ti ti-check"></i></button>
+              </div>
+            </div>
+            <div id="scan-result" style="display:none; padding:14px; border-radius:10px; margin-top:8px; border:0.5px solid;"></div>
+          </div>
+          <div class="card">
+            <h3 style="font-size:14px; font-weight:600; margin-bottom:14px"><i class="ti ti-keyboard" style="color:#0F6E56;"></i> Registro Manual</h3>
+            <div style="display:flex; gap:8px">
+              <select id="manual-estudiante" style="flex:1; padding:8px 10px; border:0.5px solid var(--color-border-secondary,#ccc); border-radius:8px; font-size:13px; background:var(--color-background-primary,white);">
+                <option value="">Seleccionar estudiante...</option>
+              </select>
+              <select id="manual-tipo" style="padding:8px 10px; border:0.5px solid var(--color-border-secondary,#ccc); border-radius:8px; font-size:13px; background:var(--color-background-primary,white);">
+                <option value="entrada">Entrada</option>
+                <option value="salida">Salida</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="registrarManual()"><i class="ti ti-check"></i></button>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="height: fit-content;">
+          <h3 style="font-size:14px; font-weight:600; margin-bottom:14px"><i class="ti ti-list" style="color:#0F6E56;"></i> Registros del Día</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-size:12px; color:var(--color-text-secondary)" id="asistencia-fecha"></span>
+            <button class="btn btn-secondary btn-sm" onclick="limpiarAsistenciaHoy()"><i class="ti ti-trash"></i> Limpiar</button>
+          </div>
+          <div class="timeline" id="lista-asistencia" style="max-height:400px; overflow-y:auto;">
+            <div class="empty-state" style="padding:20px"><i class="ti ti-scan" style="font-size:28px"></i>Sin registros</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTES -->
+    <div id="page-reportes" class="page">
+      <div class="page-header">
+        <div>
+          <h2>Reportes e Informes</h2>
+          <p>Análisis y estadísticas del sistema</p>
+        </div>
+        <button class="btn btn-secondary" onclick="exportarCSV()"><i class="ti ti-download"></i> Exportar CSV</button>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap:16px;">
+        <div class="card">
+          <h3 style="font-size:14px; font-weight:600; margin-bottom:14px">Estudiantes por Grado</h3>
+          <div id="reporte-grados"></div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:14px; font-weight:600; margin-bottom:14px">Resumen General</h3>
+          <div id="reporte-resumen"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:0">
+        <h3 style="font-size:14px; font-weight:600; margin-bottom:14px">Lista Completa de Estudiantes</h3>
+        <div class="table-wrap">
+          <table id="reporte-tabla">
+            <thead><tr><th>#</th><th>Nombre</th><th>Documento</th><th>Grado</th><th>Código</th><th>Acudiente</th></tr></thead>
+            <tbody id="reporte-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL REGISTRO -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Registrar Estudiante</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombres *</label>
+        <input type="text" id="f-nombres" placeholder="Ej: Juan David">
+      </div>
+      <div class="form-group">
+        <label>Apellidos *</label>
+        <input type="text" id="f-apellidos" placeholder="Ej: Vargas Peña">
+      </div>
+    </div>
+    <div class="form-row three">
+      <div class="form-group">
+        <label>Documento *</label>
+        <input type="text" id="f-documento" placeholder="N° documento">
+      </div>
+      <div class="form-group">
+        <label>Grado *</label>
+        <select id="f-grado">
+          <option value="">Seleccionar...</option>
+          <option>6°</option><option>7°</option><option>8°</option><option>9°</option><option>10°</option><option>11°</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Grupo</label>
+        <select id="f-grupo">
+          <option>A</option><option>B</option><option>C</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha de Nacimiento</label>
+        <input type="date" id="f-nacimiento">
+      </div>
+      <div class="form-group">
+        <label>Género</label>
+        <select id="f-genero">
+          <option value="">Seleccionar...</option>
+          <option>Masculino</option><option>Femenino</option><option>Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombre del Acudiente</label>
+        <input type="text" id="f-acudiente" placeholder="Nombre completo">
+      </div>
+      <div class="form-group">
+        <label>Teléfono Acudiente</label>
+        <input type="text" id="f-telefono" placeholder="Ej: 310 000 0000">
+      </div>
+    </div>
+    <div id="form-error" style="display:none; color:#A32D2D; font-size:12px; margin-bottom:10px; padding:8px; background:#FCEBEB; border-radius:6px;"></div>
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEstudiante()"><i class="ti ti-check"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Estado en memoria ───────────────────────────────────────────────────────
+let estudiantes = [];
+let asistencia  = [];
+let editandoId  = null;
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function genId()      { return 'EST' + Date.now().toString().slice(-6) + Math.floor(Math.random()*100); }
+function genCodigo(d) { return 'IET' + d.toString().replace(/\D/g,'').slice(-6).padStart(6,'0'); }
+
+function showToast(msg, tipo='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = tipo==='error' ? '#FCEBEB' : tipo==='ok' ? '#E1F5EE' : '#f5f5f0';
+  t.style.color      = tipo==='error' ? '#A32D2D' : tipo==='ok' ? '#085041' : '#333';
+  t.style.border     = tipo==='error' ? '0.5px solid #F09595' : tipo==='ok' ? '0.5px solid #5DCAA5' : '0.5px solid #ccc';
+  t.style.display    = 'block';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.style.display='none', 3000);
+}
+
+// ─── Firestore helpers (disponibles después de firebase-ready) ────────────────
+async function fbSaveEstudiante(e) {
+  const { doc, setDoc, collection } = window._fs;
+  await setDoc(doc(window._db, 'estudiantes', e.id), e);
+}
+async function fbDeleteEstudiante(id) {
+  const { doc, deleteDoc } = window._fs;
+  await deleteDoc(doc(window._db, 'estudiantes', id));
+}
+async function fbSaveAsistencia(a) {
+  const { doc, setDoc } = window._fs;
+  await setDoc(doc(window._db, 'asistencia', String(a.id)), a);
+}
+async function fbDeleteAsistenciaHoy(fecha) {
+  const { collection, getDocs, doc, deleteDoc, query } = window._fs;
+  const snap = await getDocs(collection(window._db, 'asistencia'));
+  const batch = snap.docs.filter(d => d.data().fecha === fecha);
+  for(const d of batch) await deleteDoc(doc(window._db, 'asistencia', d.id));
+}
+
+// ─── Listeners en tiempo real ─────────────────────────────────────────────────
+function initListeners() {
+  const { collection, onSnapshot, query, orderBy } = window._fs;
+  const db = window._db;
+
+  onSnapshot(collection(db, 'estudiantes'), snap => {
+    estudiantes = snap.docs.map(d => d.data());
+    renderTabla(); renderDashboard();
+  });
+
+  onSnapshot(query(collection(db, 'asistencia'), orderBy('id','desc')), snap => {
+    asistencia = snap.docs.map(d => d.data());
+    renderDashboard();
+    if(document.getElementById('page-asistencia').classList.contains('active')) renderAsistencia();
+  });
+}
+
+// ─── Navegación ───────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelector('[data-page="' + name + '"]').classList.add('active');
+  if(name === 'carnets')    renderCarnets();
+  if(name === 'reportes')   renderReportes();
+  if(name === 'dashboard')  renderDashboard();
+  if(name === 'asistencia') { renderAsistencia(); renderSelectEstudiantes(); }
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function openModal(id) {
+  editandoId = id || null;
+  document.getElementById('modal-title').textContent = id ? 'Editar Estudiante' : 'Registrar Estudiante';
+  document.getElementById('form-error').style.display = 'none';
+  if(id) {
+    const e = estudiantes.find(s => s.id === id);
+    if(e) {
+      document.getElementById('f-nombres').value    = e.nombres;
+      document.getElementById('f-apellidos').value  = e.apellidos;
+      document.getElementById('f-documento').value  = e.documento;
+      document.getElementById('f-grado').value      = e.grado;
+      document.getElementById('f-grupo').value      = e.grupo;
+      document.getElementById('f-nacimiento').value = e.nacimiento || '';
+      document.getElementById('f-genero').value     = e.genero || '';
+      document.getElementById('f-acudiente').value  = e.acudiente || '';
+      document.getElementById('f-telefono').value   = e.telefono || '';
+    }
+  } else {
+    ['f-nombres','f-apellidos','f-documento','f-acudiente','f-telefono'].forEach(fid => document.getElementById(fid).value = '');
+    document.getElementById('f-grado').value = '';
+    document.getElementById('f-grupo').value = 'A';
+    document.getElementById('f-genero').value = '';
+    document.getElementById('f-nacimiento').value = '';
+  }
+  document.getElementById('modal-backdrop').classList.add('open');
+  setTimeout(() => document.getElementById('f-nombres').focus(), 100);
+}
+function closeModal() {
+  document.getElementById('modal-backdrop').classList.remove('open');
+  editandoId = null;
+}
+
+// ─── CRUD Estudiantes ─────────────────────────────────────────────────────────
+async function guardarEstudiante() {
+  const n = document.getElementById('f-nombres').value.trim();
+  const a = document.getElementById('f-apellidos').value.trim();
+  const d = document.getElementById('f-documento').value.trim();
+  const g = document.getElementById('f-grado').value;
+  const err = document.getElementById('form-error');
+  if(!n || !a || !d || !g) {
+    err.textContent = 'Por favor completa los campos obligatorios (*)';
+    err.style.display = 'block'; return;
+  }
+  if(!editandoId && estudiantes.find(e => e.documento === d)) {
+    err.textContent = 'Ya existe un estudiante con ese número de documento.';
+    err.style.display = 'block'; return;
+  }
+  err.style.display = 'none';
+
+  let obj;
+  if(editandoId) {
+    const base = estudiantes.find(e => e.id === editandoId) || {};
+    obj = { ...base, nombres: n, apellidos: a, documento: d, grado: g,
+      grupo: document.getElementById('f-grupo').value,
+      nacimiento: document.getElementById('f-nacimiento').value,
+      genero: document.getElementById('f-genero').value,
+      acudiente: document.getElementById('f-acudiente').value,
+      telefono: document.getElementById('f-telefono').value };
+  } else {
+    const id = genId();
+    obj = { id, nombres: n, apellidos: a, documento: d, grado: g,
+      grupo: document.getElementById('f-grupo').value,
+      nacimiento: document.getElementById('f-nacimiento').value,
+      genero: document.getElementById('f-genero').value,
+      acudiente: document.getElementById('f-acudiente').value,
+      telefono: document.getElementById('f-telefono').value,
+      codigo: genCodigo(d), fechaRegistro: new Date().toISOString(), activo: true };
+  }
+
+  try {
+    await fbSaveEstudiante(obj);
+    showToast(editandoId ? 'Estudiante actualizado ✓' : 'Estudiante registrado ✓', 'ok');
+    closeModal();
+  } catch(ex) {
+    showToast('Error al guardar: ' + ex.message, 'error');
+  }
+}
+
+async function eliminarEstudiante(id) {
+  if(!confirm('¿Eliminar este estudiante del sistema?')) return;
+  try {
+    await fbDeleteEstudiante(id);
+    showToast('Estudiante eliminado', 'ok');
+  } catch(ex) {
+    showToast('Error al eliminar: ' + ex.message, 'error');
+  }
+}
+
+// ─── Tabla de estudiantes ─────────────────────────────────────────────────────
+function renderTabla() {
+  const search = (document.getElementById('search-input').value || '').toLowerCase();
+  const grado  = document.getElementById('filter-grado').value;
+  const tbody  = document.getElementById('tabla-estudiantes');
+  const empty  = document.getElementById('empty-estudiantes');
+  let filtered = estudiantes.filter(e => {
+    const m = (e.nombres + ' ' + e.apellidos + ' ' + e.documento + ' ' + e.grado).toLowerCase().includes(search);
+    return m && (!grado || e.grado === grado);
+  });
+  tbody.innerHTML = '';
+  if(!filtered.length) { empty.style.display='block'; return; }
+  empty.style.display='none';
+  filtered.forEach(e => {
+    const initials = (e.nombres[0] + e.apellidos[0]).toUpperCase();
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="avatar">${initials}</span>${e.nombres} ${e.apellidos}</td>
+      <td><span style="font-family:monospace;font-size:12px">${e.documento}</span></td>
+      <td><span class="badge badge-green">${e.grado} ${e.grupo}</span></td>
+      <td><span style="font-family:monospace;font-size:11px;color:var(--color-text-secondary)">${e.codigo}</span></td>
+      <td><span class="badge ${e.activo?'badge-green':'badge-gray'}">${e.activo?'Activo':'Inactivo'}</span></td>
+      <td>
+        <div class="action-bar">
+          <button class="btn btn-secondary btn-sm" onclick="openModal('${e.id}')"><i class="ti ti-edit"></i></button>
+          <button class="btn btn-secondary btn-sm" onclick="showPage('carnets');verCarnet('${e.id}')"><i class="ti ti-id"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarEstudiante('${e.id}')"><i class="ti ti-trash"></i></button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ─── Carnets ──────────────────────────────────────────────────────────────────
+let carnetFocusId = null;
+function verCarnet(id) { carnetFocusId = id; renderCarnets(); }
+function buscarCarnet() { renderCarnets(); }
+
+function renderCarnets() {
+  const search = (document.getElementById('carnet-search').value || '').toLowerCase();
+  const grado  = document.getElementById('carnet-grado').value;
+  const grid   = document.getElementById('carnets-grid');
+  const empty  = document.getElementById('empty-carnets');
+  let filtered = estudiantes.filter(e => {
+    const m = (e.nombres + ' ' + e.apellidos + ' ' + e.documento).toLowerCase().includes(search);
+    return m && (!grado || e.grado === grado);
+  });
+  if(carnetFocusId) {
+    const idx = filtered.findIndex(e => e.id === carnetFocusId);
+    if(idx > 0) { const [item] = filtered.splice(idx,1); filtered.unshift(item); }
+  }
+  grid.innerHTML = '';
+  if(!filtered.length) { empty.style.display='block'; return; }
+  empty.style.display='none';
+  filtered.forEach(e => {
+    const initials = (e.nombres[0] + e.apellidos[0]).toUpperCase();
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <div class="carnet-card" id="carnet-${e.id}">
+        <div class="carnet-header">
+          <span class="carnet-school">I.E.T. Santa Cruz de Motavita</span>
+          <span class="carnet-year">2026</span>
+        </div>
+        <div class="carnet-body">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div class="carnet-photo">${initials}</div>
+            <div>
+              <div class="carnet-name">${e.nombres} ${e.apellidos}</div>
+              <div class="carnet-info"><i class="ti ti-id-badge" style="font-size:11px"></i> ${e.documento}</div>
+              <div class="carnet-info"><i class="ti ti-book" style="font-size:11px"></i> Grado ${e.grado} – Grupo ${e.grupo}</div>
+              ${e.acudiente ? `<div class="carnet-info" style="font-size:10px">Acudiente: ${e.acudiente}</div>` : ''}
+            </div>
+          </div>
+          <div class="carnet-barcode-area">
+            <svg id="svg-${e.id}" style="width:100%;max-height:50px"></svg>
+            <div class="carnet-id">${e.codigo}</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="imprimirCarnet('${e.id}')"><i class="ti ti-printer"></i> Imprimir</button>
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="registrarEntradaDirecta('${e.id}')"><i class="ti ti-scan"></i> Registrar</button>
+      </div>`;
+    grid.appendChild(div);
+    setTimeout(() => {
+      try { JsBarcode('#svg-' + e.id, e.codigo, { format:'CODE128', width:1.5, height:38, displayValue:false, margin:2, background:'transparent' }); } catch(ex) {}
+    }, 50);
+  });
+}
+
+function imprimirCarnet(id) {
+  const carnet = document.getElementById('carnet-' + id);
+  if(!carnet) return;
+  const w = window.open('','_blank','width=400,height=300');
+  w.document.write('<html><head><title>Carnet</title><style>body{margin:20px;font-family:sans-serif;background:#fff}</style></head><body>');
+  w.document.write(carnet.outerHTML);
+  w.document.write('</body></html>');
+  w.document.close();
+  setTimeout(() => w.print(), 500);
+}
+
+// ─── Asistencia ───────────────────────────────────────────────────────────────
+function registrarEntradaDirecta(id) {
+  const e = estudiantes.find(s => s.id === id);
+  if(!e) return;
+  agregarAsistencia(e, 'entrada');
+  showPage('asistencia');
+}
+
+async function registrarAsistencia() {
+  const codigo = document.getElementById('scan-input').value.trim();
+  if(!codigo) return;
+  const e   = estudiantes.find(s => s.codigo === codigo || s.documento === codigo);
+  const res = document.getElementById('scan-result');
+  if(!e) {
+    res.style.display='block'; res.style.background='#FCEBEB'; res.style.borderColor='#F09595';
+    res.innerHTML = '<i class="ti ti-alert-circle" style="color:#A32D2D"></i> <span style="color:#A32D2D">Estudiante no encontrado. Código: <strong>' + codigo + '</strong></span>';
+    return;
+  }
+  await agregarAsistencia(e, 'entrada');
+  res.style.display='block'; res.style.background='#E1F5EE'; res.style.borderColor='#5DCAA5';
+  res.innerHTML = `<i class="ti ti-check" style="color:#085041"></i> <span style="color:#085041"><strong>${e.nombres} ${e.apellidos}</strong> — Grado ${e.grado} — Entrada registrada</span>`;
+  document.getElementById('scan-input').value = '';
+  renderAsistencia();
+}
+
+async function agregarAsistencia(e, tipo) {
+  const now = new Date();
+  const reg = {
+    id: Date.now(),
+    estudianteId: e.id,
+    nombre: e.nombres + ' ' + e.apellidos,
+    grado: e.grado, tipo,
+    hora: now.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}),
+    fecha: now.toLocaleDateString('es-CO')
+  };
+  try {
+    await fbSaveAsistencia(reg);
+  } catch(ex) {
+    showToast('Error al guardar asistencia: ' + ex.message, 'error');
+  }
+}
+
+async function registrarManual() {
+  const id   = document.getElementById('manual-estudiante').value;
+  const tipo = document.getElementById('manual-tipo').value;
+  if(!id) return;
+  const e = estudiantes.find(s => s.id === id);
+  if(e) { await agregarAsistencia(e, tipo); renderAsistencia(); }
+}
+
+async function limpiarAsistenciaHoy() {
+  const hoy = new Date().toLocaleDateString('es-CO');
+  if(!confirm('¿Limpiar todos los registros de asistencia de hoy?')) return;
+  try {
+    await fbDeleteAsistenciaHoy(hoy);
+    showToast('Registros de hoy eliminados', 'ok');
+  } catch(ex) {
+    showToast('Error al limpiar: ' + ex.message, 'error');
+  }
+}
+
+function renderAsistencia() {
+  const hoy = new Date().toLocaleDateString('es-CO');
+  document.getElementById('asistencia-fecha').textContent = 'Fecha: ' + hoy;
+  const lista    = document.getElementById('lista-asistencia');
+  const hoyItems = asistencia.filter(a => a.fecha === hoy);
+  if(!hoyItems.length) {
+    lista.innerHTML = '<div class="empty-state" style="padding:20px"><i class="ti ti-scan" style="font-size:28px"></i>Sin registros hoy</div>';
+    return;
+  }
+  lista.innerHTML = hoyItems.map(a => `
+    <div class="timeline-item">
+      <div class="timeline-dot ${a.tipo==='entrada'?'dot-green':'dot-red'}"></div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500">${a.nombre}</div>
+        <div style="font-size:11px;color:var(--color-text-secondary)">Grado ${a.grado} · ${a.tipo==='entrada'?'Entrada':'Salida'} · ${a.hora}</div>
+      </div>
+      <span class="badge ${a.tipo==='entrada'?'badge-green':'badge-red'}">${a.tipo==='entrada'?'↑ Entrada':'↓ Salida'}</span>
+    </div>`).join('');
+}
+
+function renderSelectEstudiantes() {
+  const sel = document.getElementById('manual-estudiante');
+  sel.innerHTML = '<option value="">Seleccionar estudiante...</option>';
+  [...estudiantes].sort((a,b) => (a.apellidos+a.nombres).localeCompare(b.apellidos+b.nombres)).forEach(e => {
+    sel.innerHTML += `<option value="${e.id}">${e.apellidos} ${e.nombres} — ${e.grado}</option>`;
+  });
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+function renderDashboard() {
+  document.getElementById('stat-total').textContent    = estudiantes.length;
+  document.getElementById('stat-carnets').textContent  = estudiantes.length;
+  const hoy = new Date().toLocaleDateString('es-CO');
+  document.getElementById('stat-asistencia').textContent = asistencia.filter(a => a.fecha === hoy).length;
+  document.getElementById('stat-fecha').textContent = new Date().toLocaleDateString('es-CO', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const timeline = document.getElementById('timeline-asistencia');
+  const hoyItems = asistencia.filter(a => a.fecha === hoy).slice(0,6);
+  timeline.innerHTML = hoyItems.length
+    ? hoyItems.map(a => `
+        <div class="timeline-item">
+          <div class="timeline-dot ${a.tipo==='entrada'?'dot-green':'dot-red'}"></div>
+          <div><div style="font-size:12px;font-weight:500">${a.nombre}</div>
+          <div style="font-size:11px;color:var(--color-text-secondary)">${a.tipo==='entrada'?'Entrada':'Salida'} · ${a.hora}</div></div>
+        </div>`).join('')
+    : '<div class="empty-state" style="padding:20px"><i class="ti ti-scan" style="font-size:28px"></i>Sin registros hoy</div>';
+
+  const grados = ['6°','7°','8°','9°','10°','11°'];
+  const counts = grados.map(g => estudiantes.filter(e => e.grado === g).length);
+  const max    = Math.max(...counts, 1);
+  document.getElementById('grados-chart').innerHTML = grados.map((g,i) => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:12px;width:28px;color:var(--color-text-secondary)">${g}</span>
+      <div style="flex:1;background:var(--color-background-secondary,#f0f0f0);border-radius:4px;height:18px;overflow:hidden">
+        <div style="height:100%;width:${Math.round(counts[i]/max*100)}%;background:#0F6E56;border-radius:4px;transition:width 0.4s"></div>
+      </div>
+      <span style="font-size:12px;font-weight:600;min-width:18px">${counts[i]}</span>
+    </div>`).join('');
+}
+
+// ─── Reportes ─────────────────────────────────────────────────────────────────
+function renderReportes() {
+  const grados = ['6°','7°','8°','9°','10°','11°'];
+  const counts = grados.map(g => estudiantes.filter(e => e.grado === g).length);
+  const max    = Math.max(...counts, 1);
+  document.getElementById('reporte-grados').innerHTML = grados.map((g,i) => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:13px;width:32px">${g}</span>
+      <div style="flex:1;background:var(--color-background-secondary,#f0f0f0);border-radius:4px;height:20px">
+        <div style="height:100%;width:${Math.round(counts[i]/max*100)}%;background:#0F6E56;border-radius:4px"></div>
+      </div>
+      <span style="font-size:13px;font-weight:600;min-width:22px">${counts[i]}</span>
+    </div>`).join('') || '<p style="color:var(--color-text-secondary);font-size:13px">Sin datos</p>';
+
+  const hoy = new Date().toLocaleDateString('es-CO');
+  document.getElementById('reporte-resumen').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${[['Total estudiantes',estudiantes.length,'green'],
+         ['Estudiantes activos',estudiantes.filter(e=>e.activo).length,'blue'],
+         ['Asistencia hoy',asistencia.filter(a=>a.fecha===hoy).length,'amber'],
+         ['Total registros asistencia',asistencia.length,'gray']
+        ].map(([label,val]) => `
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--color-background-secondary,#f5f5f0);border-radius:8px">
+          <span style="font-size:13px;color:var(--color-text-secondary)">${label}</span>
+          <span style="font-size:15px;font-weight:600;color:var(--color-text-primary)">${val}</span>
+        </div>`).join('')}
+    </div>`;
+
+  document.getElementById('reporte-tbody').innerHTML = estudiantes.map((e,i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${e.nombres} ${e.apellidos}</td>
+      <td style="font-family:monospace;font-size:12px">${e.documento}</td>
+      <td><span class="badge badge-green">${e.grado} ${e.grupo}</span></td>
+      <td style="font-family:monospace;font-size:11px">${e.codigo}</td>
+      <td>${e.acudiente||'—'}</td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--color-text-secondary);padding:20px">Sin estudiantes registrados</td></tr>';
+}
+
+// ─── Exportar CSV ─────────────────────────────────────────────────────────────
+function exportarCSV() {
+  if(!estudiantes.length) { alert('No hay datos para exportar.'); return; }
+  const headers = ['Nombres','Apellidos','Documento','Grado','Grupo','Código','Acudiente','Teléfono'];
+  const rows    = estudiantes.map(e => [e.nombres,e.apellidos,e.documento,e.grado,e.grupo,e.codigo,e.acudiente||'',e.telefono||'']);
+  const csv     = [headers,...rows].map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob    = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
+  const a       = document.createElement('a');
+  a.href        = URL.createObjectURL(blob);
+  a.download    = 'estudiantes_IET_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+}
+
+// ─── Inicio: esperar Firebase ─────────────────────────────────────────────────
+window.addEventListener('firebase-ready', () => {
+  initListeners();
+  renderDashboard();
+});
+</script>
+</div><!-- /app -->
+</div><!-- /main-app -->
+</body>
+</html>
