@@ -45,7 +45,7 @@
   };
 
   // ── Correo del administrador ──────────────────────────────────────────────
-  const ADMIN_EMAIL = 'juanjos2621@gmail.com'; // ← cambia esto por tu correo
+  const ADMIN_EMAIL = 'TU_CORREO@gmail.com'; // ← cambia esto por tu correo
 
   // Escuchar cambios de autenticación
   onAuthStateChanged(auth, async user => {
@@ -1017,7 +1017,41 @@ function exportarCSV() {
   a.click();
 }
 
-// ─── Inicio: esperar Firebase ─────────────────────────────────────────────────
+// ─── Captura global del lector de código de barras ───────────────────────────
+// El lector escribe muy rápido (< 50ms entre caracteres), el teclado normal es más lento
+let _scanBuffer = '';
+let _scanTimer  = null;
+
+document.addEventListener('keydown', function(e) {
+  // Solo activo si estamos en la página de asistencia
+  const pageAsistencia = document.getElementById('page-asistencia');
+  if(!pageAsistencia || !pageAsistencia.classList.contains('active')) return;
+
+  // Si el foco está en otro input (manual-estudiante, etc.) ignorar
+  const tag = document.activeElement?.tagName;
+  const activeId = document.activeElement?.id;
+  if(tag === 'SELECT' || activeId === 'manual-estudiante') return;
+
+  if(e.key === 'Enter') {
+    if(_scanBuffer.length > 3) {
+      // Poner el buffer en el campo y registrar
+      const input = document.getElementById('scan-input');
+      input.value = _scanBuffer;
+      registrarAsistencia();
+    }
+    _scanBuffer = '';
+    clearTimeout(_scanTimer);
+    return;
+  }
+
+  // Acumular caracteres
+  if(e.key.length === 1) {
+    _scanBuffer += e.key;
+    clearTimeout(_scanTimer);
+    // Si pasan 100ms sin más teclas, limpiar buffer (evita basura)
+    _scanTimer = setTimeout(() => { _scanBuffer = ''; }, 100);
+  }
+});
 window.addEventListener('firebase-ready', () => {
   initListeners();
   renderDashboard();
