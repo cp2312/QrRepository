@@ -26,7 +26,6 @@
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
-  // Expose to global scope
   window._db   = db;
   window._auth = auth;
   window._fs   = { collection, doc, getDocs, setDoc, deleteDoc, onSnapshot, query, orderBy };
@@ -44,19 +43,15 @@
     await signOut(auth);
   };
 
-  // ── Correo del administrador ──────────────────────────────────────────────
-  const ADMIN_EMAIL = 'juanjos2621@gmail.com'; // ← cambia esto por tu correo
+  const ADMIN_EMAIL = 'juanjos2126@gmail.com'; // ← cambia esto por tu correo
 
-  // Escuchar cambios de autenticación
   onAuthStateChanged(auth, async user => {
     if(user) {
       if(user.email !== ADMIN_EMAIL) {
-        // No es el admin → cerrar sesión y mostrar error
         await signOut(auth);
         document.getElementById('login-error').style.display = 'block';
         return;
       }
-      // Es el admin → mostrar app
       document.getElementById('login-error').style.display = 'none';
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('main-app').style.display = 'flex';
@@ -159,9 +154,24 @@
   .carnet-barcode-area svg { max-width: 100%; }
   .carnet-id { color: #444; font-size: 10px; margin-top: 3px; letter-spacing: 0.05em; font-family: monospace; }
   
-  .scanner-area { background: var(--color-background-secondary, #f5f5f0); border: 2px dashed var(--color-border-secondary, #ccc); border-radius: 12px; padding: 40px 20px; text-align: center; margin-bottom: 16px; }
+  .scanner-area { background: var(--color-background-secondary, #f5f5f0); border: 2px dashed var(--color-border-secondary, #ccc); border-radius: 12px; padding: 40px 20px; text-align: center; margin-bottom: 16px; cursor: pointer; }
+  .scanner-area:focus-within { border-color: #0F6E56; background: #f0faf6; }
   .scanner-icon { font-size: 48px; color: var(--color-text-secondary, #999); margin-bottom: 12px; }
   .scanner-input { display: flex; gap: 10px; max-width: 400px; margin: 0 auto; }
+
+  /* Indicador de foco del scanner */
+  .scan-focus-indicator {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; padding: 4px 10px; border-radius: 20px;
+    margin-top: 10px;
+    background: #E1F5EE; color: #085041; border: 0.5px solid #5DCAA5;
+  }
+  .scan-focus-indicator.inactive {
+    background: #FFF8E1; color: #633806; border-color: #F9C74F;
+  }
+  .scan-pulse { width: 7px; height: 7px; border-radius: 50%; background: #0F6E56; animation: pulse 1.2s infinite; }
+  .scan-pulse.inactive { background: #F9C74F; animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
   
   .timeline { display: flex; flex-direction: column; gap: 0; }
   .timeline-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary, #e0e0e0); align-items: center; }
@@ -245,7 +255,7 @@
 </style>
 </head>
 <body>
-<!-- Toast de notificaciones -->
+<!-- Toast -->
 <div id="toast" style="display:none;position:fixed;bottom:20px;right:20px;z-index:999;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,0.12)"></div>
 
 <!-- Indicador Firebase -->
@@ -260,7 +270,6 @@
     <div class="login-title">I.E.T. Santa Cruz de Motavita</div>
     <div class="login-sub">Sistema de Carnetización Estudiantil<br>Inicia sesión para continuar</div>
     <button class="btn-google" onclick="loginGoogle()">
-      <!-- Ícono Google -->
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -276,7 +285,7 @@
   </div>
 </div>
 
-<!-- APP PRINCIPAL (oculta hasta login) -->
+<!-- APP PRINCIPAL -->
 <div id="main-app" style="display:none;flex-direction:column;min-height:100vh">
 <div class="app">
   <header class="header">
@@ -293,7 +302,6 @@
       <button class="nav-btn" onclick="showPage('carnets')" data-page="carnets"><i class="ti ti-id"></i><span>Carnets</span></button>
       <button class="nav-btn" onclick="showPage('asistencia')" data-page="asistencia"><i class="ti ti-scan"></i><span>Asistencia</span></button>
       <button class="nav-btn" onclick="showPage('reportes')" data-page="reportes"><i class="ti ti-chart-bar"></i><span>Reportes</span></button>
-      <!-- Chip de usuario -->
       <div class="user-chip">
         <div class="user-chip-avatar" id="user-avatar">?</div>
         <span class="user-chip-name" id="user-name"></span>
@@ -370,8 +378,7 @@
                 <th>Estudiante</th><th>Documento</th><th>Grado</th><th>Código</th><th>Estado</th><th>Acciones</th>
               </tr>
             </thead>
-            <tbody id="tabla-estudiantes">
-            </tbody>
+            <tbody id="tabla-estudiantes"></tbody>
           </table>
           <div id="empty-estudiantes" class="empty-state" style="display:none">
             <i class="ti ti-users"></i>No hay estudiantes registrados
@@ -398,8 +405,7 @@
             <option>6°</option><option>7°</option><option>8°</option><option>9°</option><option>10°</option><option>11°</option>
           </select>
         </div>
-        <div id="carnets-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">
-        </div>
+        <div id="carnets-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px;"></div>
         <div id="empty-carnets" class="empty-state" style="display:none">
           <i class="ti ti-id"></i>No hay carnets generados. Registra estudiantes primero.
         </div>
@@ -418,14 +424,22 @@
         <div>
           <div class="card">
             <h3 style="font-size:14px; font-weight:600; margin-bottom:14px"><i class="ti ti-scan" style="color:#0F6E56;"></i> Escanear Código</h3>
-            <div class="scanner-area">
+            <!-- El área completa es clickeable para recuperar foco -->
+            <div class="scanner-area" id="scanner-area" onclick="focusScanInput()">
               <div class="scanner-icon"><i class="ti ti-barcode"></i></div>
-              <p style="font-size:13px; color:var(--color-text-secondary); margin-bottom:16px">Ingresa el código del estudiante o el ID del carnet</p>
+              <p style="font-size:13px; color:var(--color-text-secondary); margin-bottom:16px">
+                Apunta el lector al código del carnet o escribe el código manualmente
+              </p>
               <div class="scanner-input">
-               <input type="text" id="scan-input" placeholder="Código de barras..."
-  style="flex:1; padding:8px 12px; border:0.5px solid var(--color-border-secondary,#ccc); border-radius:8px; font-size:13px;"
-  onkeydown="if(event.key==='Enter'){ event.preventDefault(); registrarAsistencia(); }">
+                <input type="text" id="scan-input" placeholder="Código de barras..."
+                  style="flex:1; padding:8px 12px; border:0.5px solid var(--color-border-secondary,#ccc); border-radius:8px; font-size:13px;"
+                  onkeydown="if(event.key==='Enter'){ event.preventDefault(); registrarAsistencia(); }">
                 <button class="btn btn-primary" onclick="registrarAsistencia()"><i class="ti ti-check"></i></button>
+              </div>
+              <!-- Indicador de estado del foco -->
+              <div id="scan-focus-indicator" class="scan-focus-indicator inactive" style="margin-top:12px">
+                <div class="scan-pulse inactive" id="scan-pulse"></div>
+                <span id="scan-focus-text">Haz clic aquí para activar el escáner</span>
               </div>
             </div>
             <div id="scan-result" style="display:none; padding:14px; border-radius:10px; margin-top:8px; border:0.5px solid;"></div>
@@ -558,12 +572,12 @@
 </div>
 
 <script>
-// ─── Estado en memoria ───────────────────────────────────────────────────────
+// ─── Estado ───────────────────────────────────────────────────────────────────
 let estudiantes = [];
 let asistencia  = [];
 let editandoId  = null;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function genId()      { return 'EST' + Date.now().toString().slice(-6) + Math.floor(Math.random()*100); }
 function genCodigo(d) { return 'IET' + d.toString().replace(/\D/g,'').slice(-6).padStart(6,'0'); }
 
@@ -578,9 +592,23 @@ function showToast(msg, tipo='info') {
   t._timer = setTimeout(() => t.style.display='none', 3000);
 }
 
-// ─── Firestore helpers (disponibles después de firebase-ready) ────────────────
+function getFechaHoy() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function getHoraAhora() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function fechaLegible(f) {
+  if(!f) return '';
+  const [y,m,d] = f.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ─── Firebase helpers ─────────────────────────────────────────────────────────
 async function fbSaveEstudiante(e) {
-  const { doc, setDoc, collection } = window._fs;
+  const { doc, setDoc } = window._fs;
   await setDoc(doc(window._db, 'estudiantes', e.id), e);
 }
 async function fbDeleteEstudiante(id) {
@@ -589,29 +617,34 @@ async function fbDeleteEstudiante(id) {
 }
 async function fbSaveAsistencia(a) {
   const { doc, setDoc } = window._fs;
-  await setDoc(doc(window._db, 'asistencia', String(a.id)), a);
+  // Usar prefijo fijo para evitar IDs ambiguos
+  await setDoc(doc(window._db, 'asistencia', 'asis_' + a.id), a);
 }
 async function fbDeleteAsistenciaHoy(fecha) {
-  const { collection, getDocs, doc, deleteDoc, query } = window._fs;
+  const { collection, getDocs, doc, deleteDoc } = window._fs;
   const snap = await getDocs(collection(window._db, 'asistencia'));
-  const batch = snap.docs.filter(d => d.data().fecha === fecha);
-  for(const d of batch) await deleteDoc(doc(window._db, 'asistencia', d.id));
+  for(const d of snap.docs) {
+    if(d.data().fecha === fecha) await deleteDoc(doc(window._db, 'asistencia', d.id));
+  }
 }
 
-// ─── Listeners en tiempo real ─────────────────────────────────────────────────
+// ─── Listeners Firestore en tiempo real ───────────────────────────────────────
 function initListeners() {
   const { collection, onSnapshot, query, orderBy } = window._fs;
   const db = window._db;
 
   onSnapshot(collection(db, 'estudiantes'), snap => {
     estudiantes = snap.docs.map(d => d.data());
-    renderTabla(); renderDashboard();
+    renderTabla();
+    renderDashboard();
   });
 
-  onSnapshot(query(collection(db, 'asistencia'), orderBy('id','desc')), snap => {
+  onSnapshot(query(collection(db, 'asistencia'), orderBy('id', 'desc')), snap => {
     asistencia = snap.docs.map(d => d.data());
     renderDashboard();
-    if(document.getElementById('page-asistencia').classList.contains('active')) renderAsistencia();
+    if(document.getElementById('page-asistencia').classList.contains('active')) {
+      renderAsistencia();
+    }
   });
 }
 
@@ -627,7 +660,30 @@ function showPage(name) {
   if(name === 'asistencia') {
     renderAsistencia();
     renderSelectEstudiantes();
-    setTimeout(() => document.getElementById('scan-input')?.focus(), 200);
+    // Dar foco al input del escáner al entrar
+    setTimeout(() => focusScanInput(), 300);
+  }
+}
+
+// ─── Foco del escáner ─────────────────────────────────────────────────────────
+function focusScanInput() {
+  const input = document.getElementById('scan-input');
+  if(input) input.focus();
+}
+
+function updateScanIndicator(focused) {
+  const indicator = document.getElementById('scan-focus-indicator');
+  const pulse     = document.getElementById('scan-pulse');
+  const text      = document.getElementById('scan-focus-text');
+  if(!indicator) return;
+  if(focused) {
+    indicator.className = 'scan-focus-indicator';
+    pulse.className = 'scan-pulse';
+    text.textContent = 'Escáner activo — listo para leer';
+  } else {
+    indicator.className = 'scan-focus-indicator inactive';
+    pulse.className = 'scan-pulse inactive';
+    text.textContent = 'Haz clic aquí para activar el escáner';
   }
 }
 
@@ -651,9 +707,9 @@ function openModal(id) {
     }
   } else {
     ['f-nombres','f-apellidos','f-documento','f-acudiente','f-telefono'].forEach(fid => document.getElementById(fid).value = '');
-    document.getElementById('f-grado').value = '';
-    document.getElementById('f-grupo').value = 'A';
-    document.getElementById('f-genero').value = '';
+    document.getElementById('f-grado').value     = '';
+    document.getElementById('f-grupo').value     = 'A';
+    document.getElementById('f-genero').value    = '';
     document.getElementById('f-nacimiento').value = '';
   }
   document.getElementById('modal-backdrop').classList.add('open');
@@ -706,6 +762,7 @@ async function guardarEstudiante() {
     showToast(editandoId ? 'Estudiante actualizado ✓' : 'Estudiante registrado ✓', 'ok');
     closeModal();
   } catch(ex) {
+    console.error('Error guardando estudiante:', ex);
     showToast('Error al guardar: ' + ex.message, 'error');
   }
 }
@@ -805,7 +862,9 @@ function renderCarnets() {
       </div>`;
     grid.appendChild(div);
     setTimeout(() => {
-      try { JsBarcode('#svg-' + e.id, e.codigo, { format:'CODE128', width:1.5, height:38, displayValue:false, margin:2, background:'transparent' }); } catch(ex) {}
+      try {
+        JsBarcode('#svg-' + e.id, e.codigo, { format:'CODE128', width:1.5, height:38, displayValue:false, margin:2, background:'transparent' });
+      } catch(ex) {}
     }, 50);
   });
 }
@@ -831,33 +890,29 @@ function registrarEntradaDirecta(id) {
 
 async function registrarAsistencia() {
   const input  = document.getElementById('scan-input');
-  const codigo = input.value.trim();
+  const codigo = (input.value || '').trim();
   const res    = document.getElementById('scan-result');
 
-  if(!codigo) return;
-
-  // Debug: mostrar qué se escaneó
-  console.log('Código escaneado:', codigo);
-  console.log('Estudiantes cargados:', estudiantes.length);
-  console.log('Códigos disponibles:', estudiantes.map(s => s.codigo));
+  if(!codigo) { input.focus(); return; }
 
   if(!estudiantes.length) {
-    res.style.display='block'; res.style.background='#FFF8E1'; res.style.borderColor='#FFD54F';
+    res.style.display='block';
+    res.style.background='#FFF8E1'; res.style.borderColor='#FFD54F';
     res.innerHTML = '<i class="ti ti-alert-triangle" style="color:#E65100"></i> <span style="color:#E65100">Aún cargando datos, espera un momento e intenta de nuevo.</span>';
     input.value = '';
     input.focus();
     return;
   }
 
-  // Buscar por código o documento (ignorar mayúsculas/espacios)
   const codigoLimpio = codigo.toUpperCase().trim();
   const e = estudiantes.find(s =>
-    s.codigo?.toUpperCase().trim() === codigoLimpio ||
-    s.documento?.trim() === codigo.trim()
+    (s.codigo || '').toUpperCase().trim() === codigoLimpio ||
+    (s.documento || '').trim() === codigo.trim()
   );
 
   if(!e) {
-    res.style.display='block'; res.style.background='#FCEBEB'; res.style.borderColor='#F09595';
+    res.style.display='block';
+    res.style.background='#FCEBEB'; res.style.borderColor='#F09595';
     res.innerHTML = `<i class="ti ti-alert-circle" style="color:#A32D2D"></i> <span style="color:#A32D2D">No encontrado: <strong>${codigo}</strong> — Verifica que el carnet esté registrado.</span>`;
     input.value = '';
     input.focus();
@@ -865,26 +920,30 @@ async function registrarAsistencia() {
   }
 
   await agregarAsistencia(e, 'entrada');
-  res.style.display='block'; res.style.background='#E1F5EE'; res.style.borderColor='#5DCAA5';
+
+  res.style.display='block';
+  res.style.background='#E1F5EE'; res.style.borderColor='#5DCAA5';
   res.innerHTML = `<i class="ti ti-check" style="color:#085041"></i> <span style="color:#085041"><strong>${e.nombres} ${e.apellidos}</strong> — Grado ${e.grado} — Entrada registrada ✓</span>`;
   input.value = '';
-  input.focus(); // mantener foco para el siguiente escaneo
-  renderAsistencia();
+  // Mantener foco para el siguiente escaneo
+  input.focus();
 }
 
 async function agregarAsistencia(e, tipo) {
-  const now = new Date();
   const reg = {
     id: Date.now(),
     estudianteId: e.id,
     nombre: e.nombres + ' ' + e.apellidos,
-    grado: e.grado, tipo,
-    hora: now.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'}),
-    fecha: now.toLocaleDateString('es-CO')
+    grado: e.grado,
+    tipo,
+    hora: getHoraAhora(),
+    fecha: getFechaHoy()
   };
   try {
     await fbSaveAsistencia(reg);
+    console.log('✅ Asistencia guardada:', reg);
   } catch(ex) {
+    console.error('❌ Error Firestore asistencia:', ex);
     showToast('Error al guardar asistencia: ' + ex.message, 'error');
   }
 }
@@ -894,11 +953,14 @@ async function registrarManual() {
   const tipo = document.getElementById('manual-tipo').value;
   if(!id) return;
   const e = estudiantes.find(s => s.id === id);
-  if(e) { await agregarAsistencia(e, tipo); renderAsistencia(); }
+  if(e) {
+    await agregarAsistencia(e, tipo);
+    renderAsistencia();
+  }
 }
 
 async function limpiarAsistenciaHoy() {
-  const hoy = new Date().toLocaleDateString('es-CO');
+  const hoy = getFechaHoy();
   if(!confirm('¿Limpiar todos los registros de asistencia de hoy?')) return;
   try {
     await fbDeleteAsistenciaHoy(hoy);
@@ -909,8 +971,8 @@ async function limpiarAsistenciaHoy() {
 }
 
 function renderAsistencia() {
-  const hoy = new Date().toLocaleDateString('es-CO');
-  document.getElementById('asistencia-fecha').textContent = 'Fecha: ' + hoy;
+  const hoy = getFechaHoy();
+  document.getElementById('asistencia-fecha').textContent = 'Fecha: ' + fechaLegible(hoy);
   const lista    = document.getElementById('lista-asistencia');
   const hoyItems = asistencia.filter(a => a.fecha === hoy);
   if(!hoyItems.length) {
@@ -931,26 +993,30 @@ function renderAsistencia() {
 function renderSelectEstudiantes() {
   const sel = document.getElementById('manual-estudiante');
   sel.innerHTML = '<option value="">Seleccionar estudiante...</option>';
-  [...estudiantes].sort((a,b) => (a.apellidos+a.nombres).localeCompare(b.apellidos+b.nombres)).forEach(e => {
-    sel.innerHTML += `<option value="${e.id}">${e.apellidos} ${e.nombres} — ${e.grado}</option>`;
-  });
+  [...estudiantes]
+    .sort((a,b) => (a.apellidos+a.nombres).localeCompare(b.apellidos+b.nombres))
+    .forEach(e => {
+      sel.innerHTML += `<option value="${e.id}">${e.apellidos} ${e.nombres} — ${e.grado}</option>`;
+    });
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 function renderDashboard() {
   document.getElementById('stat-total').textContent    = estudiantes.length;
   document.getElementById('stat-carnets').textContent  = estudiantes.length;
-  const hoy = new Date().toLocaleDateString('es-CO');
-  document.getElementById('stat-asistencia').textContent = asistencia.filter(a => a.fecha === hoy).length;
-  document.getElementById('stat-fecha').textContent = new Date().toLocaleDateString('es-CO', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('stat-asistencia').textContent = asistencia.filter(a => a.fecha === getFechaHoy()).length;
+  document.getElementById('stat-fecha').textContent    = fechaLegible(getFechaHoy());
+
   const timeline = document.getElementById('timeline-asistencia');
-  const hoyItems = asistencia.filter(a => a.fecha === hoy).slice(0,6);
+  const hoyItems = asistencia.filter(a => a.fecha === getFechaHoy()).slice(0, 6);
   timeline.innerHTML = hoyItems.length
     ? hoyItems.map(a => `
         <div class="timeline-item">
           <div class="timeline-dot ${a.tipo==='entrada'?'dot-green':'dot-red'}"></div>
-          <div><div style="font-size:12px;font-weight:500">${a.nombre}</div>
-          <div style="font-size:11px;color:var(--color-text-secondary)">${a.tipo==='entrada'?'Entrada':'Salida'} · ${a.hora}</div></div>
+          <div>
+            <div style="font-size:12px;font-weight:500">${a.nombre}</div>
+            <div style="font-size:11px;color:var(--color-text-secondary)">${a.tipo==='entrada'?'Entrada':'Salida'} · ${a.hora}</div>
+          </div>
         </div>`).join('')
     : '<div class="empty-state" style="padding:20px"><i class="ti ti-scan" style="font-size:28px"></i>Sin registros hoy</div>';
 
@@ -981,17 +1047,18 @@ function renderReportes() {
       <span style="font-size:13px;font-weight:600;min-width:22px">${counts[i]}</span>
     </div>`).join('') || '<p style="color:var(--color-text-secondary);font-size:13px">Sin datos</p>';
 
-  const hoy = new Date().toLocaleDateString('es-CO');
+  const hoy = getFechaHoy();
   document.getElementById('reporte-resumen').innerHTML = `
     <div style="display:flex;flex-direction:column;gap:10px">
-      ${[['Total estudiantes',estudiantes.length,'green'],
-         ['Estudiantes activos',estudiantes.filter(e=>e.activo).length,'blue'],
-         ['Asistencia hoy',asistencia.filter(a=>a.fecha===hoy).length,'amber'],
-         ['Total registros asistencia',asistencia.length,'gray']
-        ].map(([label,val]) => `
+      ${[
+        ['Total estudiantes', estudiantes.length],
+        ['Estudiantes activos', estudiantes.filter(e=>e.activo).length],
+        ['Asistencia hoy', asistencia.filter(a=>a.fecha===hoy).length],
+        ['Total registros asistencia', asistencia.length]
+      ].map(([label,val]) => `
         <div style="display:flex;justify-content:space-between;padding:10px;background:var(--color-background-secondary,#f5f5f0);border-radius:8px">
           <span style="font-size:13px;color:var(--color-text-secondary)">${label}</span>
-          <span style="font-size:15px;font-weight:600;color:var(--color-text-primary)">${val}</span>
+          <span style="font-size:15px;font-weight:600">${val}</span>
         </div>`).join('')}
     </div>`;
 
@@ -1019,46 +1086,50 @@ function exportarCSV() {
   a.click();
 }
 
-// ─── Captura global del lector de código de barras ───────────────────────────
-let _scanBuffer = '';
-let _scanTimer  = null;
+// ─── Foco automático y captura global del escáner ────────────────────────────
+// El scan-input mantiene el foco en la página de asistencia.
+// Si el usuario hace clic en otro lugar, el foco vuelve automáticamente.
 
-document.addEventListener('keydown', function(e) {
-  const pageAsistencia = document.getElementById('page-asistencia');
-  if(!pageAsistencia || !pageAsistencia.classList.contains('active')) return;
+document.addEventListener('DOMContentLoaded', () => {
+  const scanInput = document.getElementById('scan-input');
 
-  const activeId = document.activeElement?.id;
-  const tag = document.activeElement?.tagName;
+  // Indicador visual de foco
+  scanInput.addEventListener('focus', () => updateScanIndicator(true));
+  scanInput.addEventListener('blur',  () => {
+    // Pequeño delay para permitir clics en botones antes de redirigir
+    setTimeout(() => {
+      const pageAsistencia = document.getElementById('page-asistencia');
+      if(!pageAsistencia?.classList.contains('active')) return;
+      // Solo devolver foco si el elemento activo no es un control importante
+      const activeTag = document.activeElement?.tagName;
+      const activeId  = document.activeElement?.id;
+      if(!['SELECT','BUTTON','A'].includes(activeTag) && activeId !== 'manual-estudiante') {
+        scanInput.focus();
+      } else {
+        updateScanIndicator(false);
+      }
+    }, 150);
+  });
 
-  // Si ya está en scan-input, dejar que el input lo maneje normalmente
-  if(activeId === 'scan-input') return;
-
-  // Ignorar selects y otros inputs de control
-  if(tag === 'SELECT' || activeId === 'manual-estudiante') return;
-
-  if(e.key === 'Enter') {
-    if(_scanBuffer.length > 3) {
-      const input = document.getElementById('scan-input');
-      input.value = _scanBuffer;
-      registrarAsistencia();
+  // Clic en área vacía dentro de la página de asistencia → recuperar foco
+  document.addEventListener('click', function(e) {
+    const pageAsistencia = document.getElementById('page-asistencia');
+    if(!pageAsistencia?.classList.contains('active')) return;
+    const tag = e.target?.tagName;
+    const id  = e.target?.id;
+    if(!['INPUT','SELECT','BUTTON','A'].includes(tag) && id !== 'scan-input') {
+      setTimeout(() => scanInput.focus(), 50);
     }
-    _scanBuffer = '';
-    clearTimeout(_scanTimer);
-    return;
-  }
-
-  if(e.key.length === 1) {
-    _scanBuffer += e.key;
-    clearTimeout(_scanTimer);
-    _scanTimer = setTimeout(() => { _scanBuffer = ''; }, 150);
-  }
+  });
 });
+
+// ─── Init Firebase ────────────────────────────────────────────────────────────
 window.addEventListener('firebase-ready', () => {
   initListeners();
   renderDashboard();
 });
 </script>
-</div><!-- /app -->
-</div><!-- /main-app -->
+</div>
+</div>
 </body>
 </html>
