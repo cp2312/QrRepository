@@ -422,7 +422,9 @@
               <div class="scanner-icon"><i class="ti ti-barcode"></i></div>
               <p style="font-size:13px; color:var(--color-text-secondary); margin-bottom:16px">Ingresa el código del estudiante o el ID del carnet</p>
               <div class="scanner-input">
-                <input type="text" id="scan-input" placeholder="Código de barras..." style="flex:1; padding:8px 12px; border:0.5px solid var(--color-border-secondary,#ccc); border-radius:8px; font-size:13px;" onkeydown="if(event.key==='Enter')registrarAsistencia()">
+               <input type="text" id="scan-input" placeholder="Código de barras..."
+  style="flex:1; padding:8px 12px; border:0.5px solid var(--color-border-secondary,#ccc); border-radius:8px; font-size:13px;"
+  onkeydown="if(event.key==='Enter'){ event.preventDefault(); registrarAsistencia(); }">
                 <button class="btn btn-primary" onclick="registrarAsistencia()"><i class="ti ti-check"></i></button>
               </div>
             </div>
@@ -1018,23 +1020,24 @@ function exportarCSV() {
 }
 
 // ─── Captura global del lector de código de barras ───────────────────────────
-// El lector escribe muy rápido (< 50ms entre caracteres), el teclado normal es más lento
 let _scanBuffer = '';
 let _scanTimer  = null;
 
 document.addEventListener('keydown', function(e) {
-  // Solo activo si estamos en la página de asistencia
   const pageAsistencia = document.getElementById('page-asistencia');
   if(!pageAsistencia || !pageAsistencia.classList.contains('active')) return;
 
-  // Si el foco está en otro input (manual-estudiante, etc.) ignorar
-  const tag = document.activeElement?.tagName;
   const activeId = document.activeElement?.id;
+  const tag = document.activeElement?.tagName;
+
+  // Si ya está en scan-input, dejar que el input lo maneje normalmente
+  if(activeId === 'scan-input') return;
+
+  // Ignorar selects y otros inputs de control
   if(tag === 'SELECT' || activeId === 'manual-estudiante') return;
 
   if(e.key === 'Enter') {
     if(_scanBuffer.length > 3) {
-      // Poner el buffer en el campo y registrar
       const input = document.getElementById('scan-input');
       input.value = _scanBuffer;
       registrarAsistencia();
@@ -1044,12 +1047,10 @@ document.addEventListener('keydown', function(e) {
     return;
   }
 
-  // Acumular caracteres
   if(e.key.length === 1) {
     _scanBuffer += e.key;
     clearTimeout(_scanTimer);
-    // Si pasan 100ms sin más teclas, limpiar buffer (evita basura)
-    _scanTimer = setTimeout(() => { _scanBuffer = ''; }, 100);
+    _scanTimer = setTimeout(() => { _scanBuffer = ''; }, 150);
   }
 });
 window.addEventListener('firebase-ready', () => {
