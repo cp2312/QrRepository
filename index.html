@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -46,7 +45,7 @@
   };
 
   // ── Correo del administrador ──────────────────────────────────────────────
-  const ADMIN_EMAIL = 'juanjos2621@gmail.com'; // ← cambia esto por tu correo
+  const ADMIN_EMAIL = 'TU_CORREO@gmail.com'; // ← cambia esto por tu correo
 
   // Escuchar cambios de autenticación
   onAuthStateChanged(auth, async user => {
@@ -623,7 +622,11 @@ function showPage(name) {
   if(name === 'carnets')    renderCarnets();
   if(name === 'reportes')   renderReportes();
   if(name === 'dashboard')  renderDashboard();
-  if(name === 'asistencia') { renderAsistencia(); renderSelectEstudiantes(); }
+  if(name === 'asistencia') {
+    renderAsistencia();
+    renderSelectEstudiantes();
+    setTimeout(() => document.getElementById('scan-input')?.focus(), 200);
+  }
 }
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
@@ -825,19 +828,45 @@ function registrarEntradaDirecta(id) {
 }
 
 async function registrarAsistencia() {
-  const codigo = document.getElementById('scan-input').value.trim();
+  const input  = document.getElementById('scan-input');
+  const codigo = input.value.trim();
+  const res    = document.getElementById('scan-result');
+
   if(!codigo) return;
-  const e   = estudiantes.find(s => s.codigo === codigo || s.documento === codigo);
-  const res = document.getElementById('scan-result');
-  if(!e) {
-    res.style.display='block'; res.style.background='#FCEBEB'; res.style.borderColor='#F09595';
-    res.innerHTML = '<i class="ti ti-alert-circle" style="color:#A32D2D"></i> <span style="color:#A32D2D">Estudiante no encontrado. Código: <strong>' + codigo + '</strong></span>';
+
+  // Debug: mostrar qué se escaneó
+  console.log('Código escaneado:', codigo);
+  console.log('Estudiantes cargados:', estudiantes.length);
+  console.log('Códigos disponibles:', estudiantes.map(s => s.codigo));
+
+  if(!estudiantes.length) {
+    res.style.display='block'; res.style.background='#FFF8E1'; res.style.borderColor='#FFD54F';
+    res.innerHTML = '<i class="ti ti-alert-triangle" style="color:#E65100"></i> <span style="color:#E65100">Aún cargando datos, espera un momento e intenta de nuevo.</span>';
+    input.value = '';
+    input.focus();
     return;
   }
+
+  // Buscar por código o documento (ignorar mayúsculas/espacios)
+  const codigoLimpio = codigo.toUpperCase().trim();
+  const e = estudiantes.find(s =>
+    s.codigo?.toUpperCase().trim() === codigoLimpio ||
+    s.documento?.trim() === codigo.trim()
+  );
+
+  if(!e) {
+    res.style.display='block'; res.style.background='#FCEBEB'; res.style.borderColor='#F09595';
+    res.innerHTML = `<i class="ti ti-alert-circle" style="color:#A32D2D"></i> <span style="color:#A32D2D">No encontrado: <strong>${codigo}</strong> — Verifica que el carnet esté registrado.</span>`;
+    input.value = '';
+    input.focus();
+    return;
+  }
+
   await agregarAsistencia(e, 'entrada');
   res.style.display='block'; res.style.background='#E1F5EE'; res.style.borderColor='#5DCAA5';
-  res.innerHTML = `<i class="ti ti-check" style="color:#085041"></i> <span style="color:#085041"><strong>${e.nombres} ${e.apellidos}</strong> — Grado ${e.grado} — Entrada registrada</span>`;
-  document.getElementById('scan-input').value = '';
+  res.innerHTML = `<i class="ti ti-check" style="color:#085041"></i> <span style="color:#085041"><strong>${e.nombres} ${e.apellidos}</strong> — Grado ${e.grado} — Entrada registrada ✓</span>`;
+  input.value = '';
+  input.focus(); // mantener foco para el siguiente escaneo
   renderAsistencia();
 }
 
