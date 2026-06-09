@@ -79,8 +79,13 @@ export async function limpiarAsistenciaHoy() {
 export function renderAsistencia() {
   const hoy      = getFechaHoy();
   const lista    = document.getElementById('lista-asistencia');
-  const hoyItems = state.asistencia.filter(a => a.fecha === hoy);
-  document.getElementById('asistencia-fecha').textContent = 'Fecha: ' + fechaLegible(hoy);
+const hoyItems = obtenerAsistenciaFiltrada();
+  const filtro =
+document.getElementById('filtro-periodo')?.value || 'dia';
+
+document.getElementById('asistencia-fecha')
+.textContent =
+`Filtro: ${filtro.toUpperCase()}`;
   document.getElementById('contador-asistencia')
   .textContent =
   `Total registros: ${hoyItems.length}`;
@@ -254,4 +259,59 @@ export function exportarAsistenciaCSV() {
   document.body.removeChild(link);
 
   URL.revokeObjectURL(url);
+}
+export function filtrarAsistencia() {
+
+  const lista = document.getElementById('lista-asistencia');
+
+  const registros = obtenerAsistenciaFiltrada();
+
+  document.getElementById('contador-asistencia')
+    .textContent = `Total registros: ${registros.length}`;
+
+  if (!registros.length) {
+
+    lista.innerHTML = `
+      <div class="empty-state" style="padding:20px">
+        <i class="ti ti-scan" style="font-size:28px"></i>
+        Sin registros
+      </div>
+    `;
+
+    return;
+  }
+
+  lista.innerHTML = registros.map(a => `
+    <div class="timeline-item">
+      <div class="timeline-dot ${
+        a.tipo === 'entrada'
+          ? 'dot-green'
+          : 'dot-red'
+      }"></div>
+
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500">
+          ${a.nombre}
+        </div>
+
+        <div style="font-size:11px;color:var(--color-text-secondary)">
+          ${a.fecha} ·
+          Grado ${a.grado} ·
+          ${a.tipo === 'entrada' ? 'Entrada' : 'Salida'} ·
+          ${a.hora}
+        </div>
+      </div>
+
+      <span class="badge ${
+        a.tipo === 'entrada'
+          ? 'badge-green'
+          : 'badge-red'
+      }">
+        ${a.tipo === 'entrada'
+          ? '↑ Entrada'
+          : '↓ Salida'}
+      </span>
+    </div>
+  `).join('');
+
 }
