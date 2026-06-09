@@ -28,6 +28,7 @@ import {
   registrarManual,
   limpiarAsistenciaHoy,
   focusScanInput,
+  renderAsistencia,
   filtrarAsistencia,
   exportarAsistenciaCSV
 } from './asistencia.js';
@@ -49,6 +50,7 @@ window.imprimirCarnet = imprimirCarnet;
 window.imprimirTodosCarnets = imprimirTodosCarnets;
 window.registrarEntradaDirecta = registrarEntradaDirecta;
 window.registrarAsistencia = registrarAsistencia;
+window.renderAsistencia = renderAsistencia;
 window.registrarManual = registrarManual;
 window.limpiarAsistenciaHoy = limpiarAsistenciaHoy;
 window.focusScanInput = focusScanInput;
