@@ -288,161 +288,32 @@ export function imprimirTodosCarnets() {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"><\/script>
 
 <style>
-
-body{
-  margin:20px;
-  background:white;
-
-  display:grid;
-  grid-template-columns:repeat(2, 320px);
-  justify-content:center;
-  gap:20px;
-
-  font-family:'Segoe UI',sans-serif;
-}
-
-.carnet-card{
-  width:320px;
-  background:#fff;
-  border-radius:16px;
-  overflow:hidden;
-  box-shadow:0 4px 12px rgba(0,0,0,.15);
-  page-break-inside:avoid;
-}
-
-.carnet-top-stripe{
-  height:7px;
-  background:linear-gradient(
-    90deg,
-    #C41E3A 0%,
-    #C41E3A 25%,
-    #D4A017 25%,
-    #D4A017 50%,
-    #1B4F8A 50%,
-    #1B4F8A 75%,
-    #1a3a1a 75%
-  );
-}
-
-.carnet-header{
-  background:linear-gradient(
-    135deg,
-    #1a3a1a 0%,
-    #2d5a2d 100%
-  );
-
-  padding:12px 14px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.carnet-escudo{
-  width:50px;
-  height:50px;
-  object-fit:contain;
-}
-
-.carnet-header-text{
-  flex:1;
-}
-
-.carnet-school-name,
-.carnet-school-sub{
-  color:#FFD700;
-  font-size:12px;
-  font-weight:800;
-}
-
-.carnet-school-type{
-  color:white;
-  font-size:9px;
-}
-
-.carnet-year-badge{
-  background:#C41E3A;
-  color:white;
-  padding:4px 8px;
-  border-radius:6px;
-  font-size:11px;
-}
-
-.carnet-divider{
-  height:3px;
-  background:linear-gradient(
-    90deg,
-    #C41E3A,
-    #D4A017,
-    #1B4F8A
-  );
-}
-
-.carnet-body{
-  padding:14px;
-  display:flex;
-  gap:12px;
-}
-
-.carnet-photo{
-  width:68px;
-  height:68px;
-  border-radius:10px;
-  background:#1a3a1a;
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:24px;
-  font-weight:800;
-}
-
-.carnet-name{
-  font-size:14px;
-  font-weight:700;
-  color:#1a3a1a;
-}
-
-.carnet-lastname{
-  margin-bottom:7px;
-}
-
-.carnet-info-row{
-  margin-bottom:4px;
-}
-
-.carnet-label{
-  background:#1a3a1a;
-  color:white;
-  font-size:9px;
-  padding:1px 5px;
-  border-radius:3px;
-}
-
-.carnet-barcode-area{
-  padding:10px;
-  text-align:center;
-}
-
-.carnet-footer-stripe{
-  height:6px;
-  background:linear-gradient(
-    90deg,
-    #1B4F8A,
-    #D4A017,
-    #C41E3A
-  );
-}
-
-@media print{
-  body{
-    margin:0;
-  }
-
-  .carnet-card{
-    box-shadow:none;
-  }
-}
-
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#e8e8e4;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Segoe UI',sans-serif;}
+  .carnet-card{width:320px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.22);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .carnet-top-stripe{height:7px;background:linear-gradient(90deg,#C41E3A 0%,#C41E3A 25%,#D4A017 25%,#D4A017 50%,#1B4F8A 50%,#1B4F8A 75%,#1a3a1a 75%);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .carnet-header{background:linear-gradient(135deg,#1a3a1a 0%,#2d5a2d 100%);padding:12px 14px;display:flex;align-items:center;gap:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .carnet-escudo{width:50px;height:50px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35));}
+  .carnet-header-text{flex:1;}
+  .carnet-school-name{color:#FFD700;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;line-height:1.15;}
+  .carnet-school-sub{color:#FFD700;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;}
+  .carnet-school-type{color:rgba(255,255,255,0.7);font-size:9px;text-transform:uppercase;letter-spacing:0.1em;margin-top:3px;}
+  .carnet-year-badge{background:#C41E3A;color:white;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .carnet-divider{height:3px;background:linear-gradient(90deg,#C41E3A,#D4A017,#1B4F8A);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .carnet-body{padding:14px;display:flex;gap:12px;align-items:flex-start;}
+  .carnet-photo-area{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .carnet-photo{width:68px;height:68px;border-radius:10px;background:linear-gradient(135deg,#2d5a2d,#1a3a1a);border:2px solid #D4A017;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:white;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .carnet-gender{font-size:9px;color:#666;margin-top:4px;text-align:center;}
+  .carnet-data{flex:1;min-width:0;}
+  .carnet-name{font-size:14px;font-weight:700;color:#1a3a1a;line-height:1.2;}
+  .carnet-lastname{font-size:13px;font-weight:600;color:#2d5a2d;margin-bottom:7px;}
+  .carnet-info-row{display:flex;gap:6px;align-items:center;margin-bottom:4px;}
+  .carnet-label{font-size:9px;font-weight:700;color:white;background:#1a3a1a;padding:1px 5px;border-radius:3px;text-transform:uppercase;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .carnet-value{font-size:11px;color:#333;font-weight:500;}
+  .carnet-barcode-area{background:#f8f8f5;margin:0 12px;border-radius:8px;padding:8px 10px 4px;display:flex;flex-direction:column;align-items:center;border:1px solid #e0ddd5;}
+  .carnet-id{color:#666;font-size:9px;margin-top:2px;letter-spacing:0.06em;font-family:monospace;}
+  .carnet-footer-stripe{height:6px;margin-top:10px;background:linear-gradient(90deg,#1B4F8A 0%,#1B4F8A 33%,#D4A017 33%,#D4A017 66%,#C41E3A 66%);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  @media print{body{background:white;min-height:unset;}.carnet-card{box-shadow:none;margin:0 auto;}}
 </style>
 </head>
 
