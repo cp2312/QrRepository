@@ -67,23 +67,35 @@ const ADMIN_EMAIL = 'juanjos2621@gmail.com';
 // Estado global para main.js
 window.firebaseReady = false;
 
+let loginEnProceso = false;
+
 window.loginGoogle = async () => {
+
+  if (loginEnProceso) return;
+
+  loginEnProceso = true;
+
+  const btn = document.getElementById('btn-google');
 
   try {
 
-    await signInWithPopup(
-      auth,
-      provider
-    );
+    btn.disabled = true;
+
+    await signInWithPopup(auth, provider);
 
   } catch (e) {
 
     console.error(e);
 
-    alert(
-      'Error al iniciar sesión: ' +
-      e.message
-    );
+    if (e.code !== 'auth/cancelled-popup-request') {
+      alert('Error al iniciar sesión: ' + e.message);
+    }
+
+  } finally {
+
+    loginEnProceso = false;
+
+    btn.disabled = false;
   }
 };
 
