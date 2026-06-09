@@ -48,6 +48,15 @@ window.limpiarAsistenciaHoy = limpiarAsistenciaHoy;
 window.focusScanInput = focusScanInput;
 window.exportarCSV = exportarCSV;
 window.renderTabla = renderTabla;
+import {
+  buscarCarnet,
+  verCarnet,
+  imprimirCarnet,
+  imprimirTodosCarnets,
+  registrarEntradaDirecta
+} from './carnets.js';
+
+window.imprimirTodosCarnets = imprimirTodosCarnets;
 
 /* ==========================================
    INICIALIZACIÓN DEL SISTEMA
@@ -110,6 +119,8 @@ window.addEventListener(
   'firebase-ready',
   iniciarSistema
 );
+
+
 
 /* ==========================================
    SI FIREBASE YA ESTÁ LISTO

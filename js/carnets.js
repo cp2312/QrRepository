@@ -181,6 +181,304 @@ export function imprimirCarnet(id) {
 </html>`);
   w.document.close();
 }
+export function imprimirTodosCarnets() {
+
+  if (!state.estudiantes.length) {
+    alert('No hay estudiantes registrados');
+    return;
+  }
+
+  const w = window.open('', '_blank');
+
+  let carnetsHTML = '';
+
+  state.estudiantes.forEach(e => {
+
+    const initials =
+      (e.nombres[0] + e.apellidos[0]).toUpperCase();
+
+    const generoIcon =
+      e.genero === 'Femenino'
+        ? '♀'
+        : e.genero === 'Masculino'
+        ? '♂'
+        : '⚧';
+
+    carnetsHTML += `
+      <div class="carnet-card">
+        <div class="carnet-top-stripe"></div>
+
+        <div class="carnet-header">
+          <img src="${ESCUDO}" class="carnet-escudo">
+          <div class="carnet-header-text">
+            <div class="carnet-school-name">
+              I.E.T. Santa Cruz
+            </div>
+            <div class="carnet-school-sub">
+              de Motavita
+            </div>
+            <div class="carnet-school-type">
+              Educativa Técnica
+            </div>
+          </div>
+
+          <div class="carnet-year-badge">
+            2026
+          </div>
+        </div>
+
+        <div class="carnet-divider"></div>
+
+        <div class="carnet-body">
+          <div class="carnet-photo-area">
+            <div class="carnet-photo">
+              ${initials}
+            </div>
+
+            <div class="carnet-gender">
+              ${generoIcon} ${e.genero || ''}
+            </div>
+          </div>
+
+          <div class="carnet-data">
+            <div class="carnet-name">
+              ${e.nombres}
+            </div>
+
+            <div class="carnet-lastname">
+              ${e.apellidos}
+            </div>
+
+            <div class="carnet-info-row">
+              <span class="carnet-label">CC/TI</span>
+              <span class="carnet-value">
+                ${e.documento}
+              </span>
+            </div>
+
+            <div class="carnet-info-row">
+              <span class="carnet-label">Grado</span>
+              <span class="carnet-value">
+                ${e.grado} – ${e.grupo}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="carnet-barcode-area">
+          <svg id="barcode-${e.id}"></svg>
+          <div class="carnet-id">
+            ${e.codigo}
+          </div>
+        </div>
+
+        <div class="carnet-footer-stripe"></div>
+      </div>
+    `;
+  });
+
+  w.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>Todos los Carnets</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"><\/script>
+
+<style>
+
+body{
+  margin:20px;
+  background:white;
+
+  display:grid;
+  grid-template-columns:repeat(2, 320px);
+  justify-content:center;
+  gap:20px;
+
+  font-family:'Segoe UI',sans-serif;
+}
+
+.carnet-card{
+  width:320px;
+  background:#fff;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
+  page-break-inside:avoid;
+}
+
+.carnet-top-stripe{
+  height:7px;
+  background:linear-gradient(
+    90deg,
+    #C41E3A 0%,
+    #C41E3A 25%,
+    #D4A017 25%,
+    #D4A017 50%,
+    #1B4F8A 50%,
+    #1B4F8A 75%,
+    #1a3a1a 75%
+  );
+}
+
+.carnet-header{
+  background:linear-gradient(
+    135deg,
+    #1a3a1a 0%,
+    #2d5a2d 100%
+  );
+
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.carnet-escudo{
+  width:50px;
+  height:50px;
+  object-fit:contain;
+}
+
+.carnet-header-text{
+  flex:1;
+}
+
+.carnet-school-name,
+.carnet-school-sub{
+  color:#FFD700;
+  font-size:12px;
+  font-weight:800;
+}
+
+.carnet-school-type{
+  color:white;
+  font-size:9px;
+}
+
+.carnet-year-badge{
+  background:#C41E3A;
+  color:white;
+  padding:4px 8px;
+  border-radius:6px;
+  font-size:11px;
+}
+
+.carnet-divider{
+  height:3px;
+  background:linear-gradient(
+    90deg,
+    #C41E3A,
+    #D4A017,
+    #1B4F8A
+  );
+}
+
+.carnet-body{
+  padding:14px;
+  display:flex;
+  gap:12px;
+}
+
+.carnet-photo{
+  width:68px;
+  height:68px;
+  border-radius:10px;
+  background:#1a3a1a;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  font-weight:800;
+}
+
+.carnet-name{
+  font-size:14px;
+  font-weight:700;
+  color:#1a3a1a;
+}
+
+.carnet-lastname{
+  margin-bottom:7px;
+}
+
+.carnet-info-row{
+  margin-bottom:4px;
+}
+
+.carnet-label{
+  background:#1a3a1a;
+  color:white;
+  font-size:9px;
+  padding:1px 5px;
+  border-radius:3px;
+}
+
+.carnet-barcode-area{
+  padding:10px;
+  text-align:center;
+}
+
+.carnet-footer-stripe{
+  height:6px;
+  background:linear-gradient(
+    90deg,
+    #1B4F8A,
+    #D4A017,
+    #C41E3A
+  );
+}
+
+@media print{
+  body{
+    margin:0;
+  }
+
+  .carnet-card{
+    box-shadow:none;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+${carnetsHTML}
+
+<script>
+
+window.onload = () => {
+
+${state.estudiantes.map(e => `
+JsBarcode(
+  '#barcode-${e.id}',
+  '${e.codigo}',
+  {
+    format:'CODE128',
+    width:1.5,
+    height:36,
+    displayValue:false
+  }
+);
+`).join('\n')}
+
+setTimeout(() => window.print(), 800);
+
+};
+
+<\/script>
+
+</body>
+</html>
+`);
+
+  w.document.close();
+}
 
 export function registrarEntradaDirecta(id) {
   const e = state.estudiantes.find(s => s.id === id);

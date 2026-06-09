@@ -176,39 +176,89 @@
       </div>
     </div>
 
-    <!-- CARNETS -->
-    <div id="page-carnets" class="page">
-      <div class="page-header">
-        <div>
-          <h2>Carnets Estudiantiles</h2>
-          <p>Generación y vista previa de carnets con código de barras</p>
-        </div>
-      </div>
-      <div class="card">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap">
-          <div style="flex:1; min-width:200px">
-            <input type="text" id="carnet-search" placeholder="Buscar estudiante..."
-              oninput="buscarCarnet()"
-              style="width:100%; padding:8px 12px;
-                border:0.5px solid var(--color-border-secondary,#ccc);
-                border-radius:8px; font-size:13px;">
-          </div>
-          <select id="carnet-grado" onchange="buscarCarnet()"
-            style="padding:8px 10px; border:0.5px solid var(--color-border-secondary,#ccc);
-              border-radius:8px; font-size:13px; background:var(--color-background-primary,white);">
-            <option value="">Todos los grados</option>
-            <option>6°</option><option>7°</option><option>8°</option>
-            <option>9°</option><option>10°</option><option>11°</option>
-          </select>
-        </div>
-        <div id="carnets-grid"
-          style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">
-        </div>
-        <div id="empty-carnets" class="empty-state" style="display:none">
-          <i class="ti ti-id"></i>No hay carnets generados. Registra estudiantes primero.
-        </div>
-      </div>
+  <!-- CARNETS -->
+<div id="page-carnets" class="page">
+
+  <div class="page-header">
+    <div>
+      <h2>Carnets Estudiantiles</h2>
+      <p>Generación y vista previa de carnets con código de barras</p>
     </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button
+        class="btn btn-success"
+        onclick="imprimirTodosCarnets()">
+        <i class="ti ti-printer"></i>
+        Imprimir todos
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap">
+
+      <div style="flex:1; min-width:200px">
+        <input
+          type="text"
+          id="carnet-search"
+          placeholder="Buscar estudiante..."
+          oninput="buscarCarnet()"
+          style="
+            width:100%;
+            padding:8px 12px;
+            border:0.5px solid var(--color-border-secondary,#ccc);
+            border-radius:8px;
+            font-size:13px;
+          ">
+      </div>
+
+      <select
+        id="carnet-grado"
+        onchange="buscarCarnet()"
+        style="
+          padding:8px 10px;
+          border:0.5px solid var(--color-border-secondary,#ccc);
+          border-radius:8px;
+          font-size:13px;
+          background:var(--color-background-primary,white);
+        ">
+
+        <option value="">Todos los grados</option>
+        <option>6°</option>
+        <option>7°</option>
+        <option>8°</option>
+        <option>9°</option>
+        <option>10°</option>
+        <option>11°</option>
+
+      </select>
+
+    </div>
+
+    <div
+      id="carnets-grid"
+      style="
+        display:grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap:20px;
+      ">
+    </div>
+
+    <div
+      id="empty-carnets"
+      class="empty-state"
+      style="display:none">
+
+      <i class="ti ti-id"></i>
+      No hay carnets generados. Registra estudiantes primero.
+
+    </div>
+
+  </div>
+
+</div>
 
     <!-- ASISTENCIA -->
     <div id="page-asistencia" class="page">
