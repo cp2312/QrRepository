@@ -32,39 +32,29 @@ export function closeModal() {
   document.getElementById('modal-backdrop').classList.remove('open');
   state.editandoId = null;
 }
-
 function _llenarFormulario(e) {
-  document.getElementById('f-nombres').value    = e.nombres;
-  document.getElementById('f-apellidos').value  = e.apellidos;
-  document.getElementById('f-documento').value  = e.documento;
-  document.getElementById('f-grado').value      = e.grado;
-  document.getElementById('f-grupo').value      = e.grupo;
-  document.getElementById('f-nacimiento').value = e.nacimiento || '';
-  document.getElementById('f-genero').value     = e.genero || '';
-  document.getElementById('f-acudiente').value  = e.acudiente || '';
-  document.getElementById('f-telefono').value   = e.telefono || '';
+  document.getElementById('f-nombres').value   = e.nombres;
+  document.getElementById('f-apellidos').value = e.apellidos;
+  document.getElementById('f-documento').value = e.documento;
+  document.getElementById('f-grado').value     = e.grado;
+  document.getElementById('f-grupo').value     = e.grupo;
+  document.getElementById('f-genero').value    = e.genero || '';
 }
-
 function _limpiarFormulario() {
-  ['f-nombres', 'f-apellidos', 'f-documento', 'f-acudiente', 'f-telefono']
+  ['f-nombres', 'f-apellidos', 'f-documento']
     .forEach(fid => (document.getElementById(fid).value = ''));
-  document.getElementById('f-grado').value      = '';
-  document.getElementById('f-grupo').value      = 'A';
-  document.getElementById('f-genero').value     = '';
-  document.getElementById('f-nacimiento').value = '';
+  document.getElementById('f-grado').value  = '';
+  document.getElementById('f-grupo').value  = 'A';
+  document.getElementById('f-genero').value = '';
 }
-
 function _leerFormulario() {
   return {
-    nombres:    document.getElementById('f-nombres').value.trim(),
-    apellidos:  document.getElementById('f-apellidos').value.trim(),
-    documento:  document.getElementById('f-documento').value.trim(),
-    grado:      document.getElementById('f-grado').value,
-    grupo:      document.getElementById('f-grupo').value,
-    nacimiento: document.getElementById('f-nacimiento').value,
-    genero:     document.getElementById('f-genero').value,
-    acudiente:  document.getElementById('f-acudiente').value,
-    telefono:   document.getElementById('f-telefono').value,
+    nombres:   document.getElementById('f-nombres').value.trim(),
+    apellidos: document.getElementById('f-apellidos').value.trim(),
+    documento: document.getElementById('f-documento').value.trim(),
+    grado:     document.getElementById('f-grado').value,
+    grupo:     document.getElementById('f-grupo').value,
+    genero:    document.getElementById('f-genero').value,
   };
 }
 
