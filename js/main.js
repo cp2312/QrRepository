@@ -5,7 +5,7 @@ import { initListeners } from './db.js';
 import { showPage } from './navegacion.js';
 import { renderTabla } from './estudiantes.js';
 import { renderDashboard } from './reportes.js';
-import { renderAsistencia, initScannerListeners } from './asistencia.js';
+
 import {
   openModal,
   closeModal,
@@ -22,13 +22,13 @@ import {
 } from './carnets.js';
 
 window.imprimirTodosCarnets = imprimirTodosCarnets;
-
 import {
+  renderAsistencia,
+  initScannerListeners,
   registrarAsistencia,
   registrarManual,
   limpiarAsistenciaHoy,
   focusScanInput,
-  renderAsistencia,
   filtrarAsistencia,
   exportarAsistenciaCSV
 } from './asistencia.js';
