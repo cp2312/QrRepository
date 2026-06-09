@@ -175,27 +175,28 @@ function _mostrarResultado(el, tipo, html) {
 }
 function obtenerAsistenciaFiltrada() {
 
-  const filtro =
+  const filtroPeriodo =
     document.getElementById('filtro-periodo')?.value || 'dia';
+
+  const filtroGrado =
+    document.getElementById('filtro-grado')?.value || '';
 
   const hoy = new Date();
 
-  return state.asistencia.filter(a => {
+  let datos = state.asistencia.filter(a => {
 
     const fechaRegistro = new Date(a.fecha);
 
-    switch (filtro) {
+    switch (filtroPeriodo) {
 
       case 'dia':
         return a.fecha === getFechaHoy();
 
       case 'semana': {
-
         const inicioSemana = new Date(hoy);
         inicioSemana.setDate(
           hoy.getDate() - hoy.getDay()
         );
-
         return fechaRegistro >= inicioSemana;
       }
 
@@ -206,9 +207,7 @@ function obtenerAsistenciaFiltrada() {
         );
 
       case 'anio':
-        return (
-          fechaRegistro.getFullYear() === hoy.getFullYear()
-        );
+        return fechaRegistro.getFullYear() === hoy.getFullYear();
 
       default:
         return true;
@@ -216,6 +215,12 @@ function obtenerAsistenciaFiltrada() {
 
   });
 
+  // FILTRO POR GRADO
+  if (filtroGrado) {
+    datos = datos.filter(a => a.grado === filtroGrado);
+  }
+
+  return datos;
 }
 export function exportarAsistenciaCSV() {
 
