@@ -1,51 +1,149 @@
 // main.js — Punto de entrada
 
-import { state }                                                      from './state.js';
-import { initListeners }                                              from './db.js';
-import { showPage }                                                   from './navegacion.js';
-import { renderTabla }                                                from './estudiantes.js';
-import { renderDashboard }                                            from './reportes.js';
-import { renderAsistencia, initScannerListeners }                     from './asistencia.js';
-import { openModal, closeModal, guardarEstudiante, eliminarEstudiante } from './estudiantes.js';
-import { buscarCarnet, verCarnet, imprimirCarnet, registrarEntradaDirecta } from './carnets.js';
-import { registrarAsistencia, registrarManual, limpiarAsistenciaHoy, focusScanInput } from './asistencia.js';
-import { exportarCSV }                                                from './reportes.js';
+import { state } from './state.js';
+import { initListeners } from './db.js';
+import { showPage } from './navegacion.js';
+import { renderTabla } from './estudiantes.js';
+import { renderDashboard } from './reportes.js';
+import { renderAsistencia, initScannerListeners } from './asistencia.js';
+import {
+  openModal,
+  closeModal,
+  guardarEstudiante,
+  eliminarEstudiante
+} from './estudiantes.js';
 
-// Exponer al scope global para los onclick del HTML
-window.showPage                = showPage;
-window.openModal               = openModal;
-window.closeModal              = closeModal;
-window.guardarEstudiante       = guardarEstudiante;
-window.eliminarEstudiante      = eliminarEstudiante;
-window.buscarCarnet            = buscarCarnet;
-window.verCarnet               = verCarnet;
-window.imprimirCarnet          = imprimirCarnet;
+import {
+  buscarCarnet,
+  verCarnet,
+  imprimirCarnet,
+  registrarEntradaDirecta
+} from './carnets.js';
+
+import {
+  registrarAsistencia,
+  registrarManual,
+  limpiarAsistenciaHoy,
+  focusScanInput
+} from './asistencia.js';
+
+import { exportarCSV } from './reportes.js';
+
+/* ==========================================
+   FUNCIONES GLOBALES PARA HTML
+========================================== */
+
+window.showPage = showPage;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.guardarEstudiante = guardarEstudiante;
+window.eliminarEstudiante = eliminarEstudiante;
+window.buscarCarnet = buscarCarnet;
+window.verCarnet = verCarnet;
+window.imprimirCarnet = imprimirCarnet;
 window.registrarEntradaDirecta = registrarEntradaDirecta;
-window.registrarAsistencia     = registrarAsistencia;
-window.registrarManual         = registrarManual;
-window.limpiarAsistenciaHoy    = limpiarAsistenciaHoy;
-window.focusScanInput          = focusScanInput;
-window.exportarCSV             = exportarCSV;
-window.renderTabla             = renderTabla;
+window.registrarAsistencia = registrarAsistencia;
+window.registrarManual = registrarManual;
+window.limpiarAsistenciaHoy = limpiarAsistenciaHoy;
+window.focusScanInput = focusScanInput;
+window.exportarCSV = exportarCSV;
+window.renderTabla = renderTabla;
 
-window.addEventListener('firebase-ready', () => {
+/* ==========================================
+   INICIALIZACIÓN DEL SISTEMA
+========================================== */
+
+function iniciarSistema() {
+
+  // Evita registrar listeners dos veces
+  if (window._listenersIniciados) return;
+
+  window._listenersIniciados = true;
+
+  console.log('🚀 Iniciando listeners de Firebase...');
+
   initListeners(
+
+    // Estudiantes
     (datos) => {
       state.estudiantes = datos;
+
       renderTabla();
       renderDashboard();
+
+      console.log(
+        `👨‍🎓 Estudiantes cargados: ${datos.length}`
+      );
     },
+
+    // Asistencia
     (datos) => {
       state.asistencia = datos;
+
       renderDashboard();
-      if (document.getElementById('page-asistencia')?.classList.contains('active')) {
+
+      const pageAsistencia =
+        document.getElementById('page-asistencia');
+
+      if (
+        pageAsistencia &&
+        pageAsistencia.classList.contains('active')
+      ) {
         renderAsistencia();
       }
-    }
-  );
-  renderDashboard();
-});
 
-document.addEventListener('DOMContentLoaded', () => {
-  initScannerListeners();
-});
+      console.log(
+        `📋 Registros de asistencia: ${datos.length}`
+      );
+    }
+
+  );
+
+  renderDashboard();
+}
+
+/* ==========================================
+   EVENTO FIREBASE LISTO
+========================================== */
+
+window.addEventListener(
+  'firebase-ready',
+  iniciarSistema
+);
+
+/* ==========================================
+   SI FIREBASE YA ESTÁ LISTO
+========================================== */
+
+if (window.firebaseReady === true) {
+  iniciarSistema();
+}
+
+/* ==========================================
+   DOM READY
+========================================== */
+
+document.addEventListener(
+  'DOMContentLoaded',
+  () => {
+
+    initScannerListeners();
+
+    // Seguridad extra:
+    // espera Firebase si todavía no llegó
+    const esperaFirebase = setInterval(() => {
+
+      if (
+        window.firebaseReady === true &&
+        !window._listenersIniciados
+      ) {
+
+        iniciarSistema();
+
+        clearInterval(esperaFirebase);
+      }
+
+    }, 200);
+
+  }
+);
