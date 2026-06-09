@@ -261,87 +261,270 @@
 </div>
 
     <!-- ASISTENCIA -->
-    <div id="page-asistencia" class="page">
-      <div class="page-header">
-        <div>
-          <h2>Control de Asistencia</h2>
-          <p>Registro de entrada y salida mediante código de barras</p>
-        </div>
-      </div>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-        <div>
-          <div class="card">
-            <h3 style="font-size:14px; font-weight:600; margin-bottom:14px">
-              <i class="ti ti-scan" style="color:#0F6E56;"></i> Escanear Código
-            </h3>
-            <div class="scanner-area" id="scanner-area" onclick="focusScanInput()">
-              <div class="scanner-icon"><i class="ti ti-barcode"></i></div>
-              <p style="font-size:13px; color:var(--color-text-secondary); margin-bottom:16px">
-                Apunta el lector al código del carnet o escribe el código manualmente
-              </p>
-              <div class="scanner-input">
-                <input type="text" id="scan-input" placeholder="Código de barras..."
-                  style="flex:1; padding:8px 12px;
-                    border:0.5px solid var(--color-border-secondary,#ccc);
-                    border-radius:8px; font-size:13px;"
-                  onkeydown="if(event.key==='Enter'){ event.preventDefault(); registrarAsistencia(); }">
-                <button class="btn btn-primary" onclick="registrarAsistencia()">
-                  <i class="ti ti-check"></i>
-                </button>
-              </div>
-              <div id="scan-focus-indicator" class="scan-focus-indicator inactive" style="margin-top:12px">
-                <div class="scan-pulse inactive" id="scan-pulse"></div>
-                <span id="scan-focus-text">Haz clic aquí para activar el escáner</span>
-              </div>
-            </div>
-            <div id="scan-result"
-              style="display:none; padding:14px; border-radius:10px; margin-top:8px; border:0.5px solid;">
-            </div>
-          </div>
-          <div class="card">
-            <h3 style="font-size:14px; font-weight:600; margin-bottom:14px">
-              <i class="ti ti-keyboard" style="color:#0F6E56;"></i> Registro Manual
-            </h3>
-            <div style="display:flex; gap:8px">
-              <select id="manual-estudiante"
-                style="flex:1; padding:8px 10px;
-                  border:0.5px solid var(--color-border-secondary,#ccc);
-                  border-radius:8px; font-size:13px;
-                  background:var(--color-background-primary,white);">
-                <option value="">Seleccionar estudiante...</option>
-              </select>
-              <select id="manual-tipo"
-                style="padding:8px 10px;
-                  border:0.5px solid var(--color-border-secondary,#ccc);
-                  border-radius:8px; font-size:13px;
-                  background:var(--color-background-primary,white);">
-                <option value="entrada">Entrada</option>
-                <option value="salida">Salida</option>
-              </select>
-              <button class="btn btn-primary btn-sm" onclick="registrarManual()">
-                <i class="ti ti-check"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="card" style="height: fit-content;">
-          <h3 style="font-size:14px; font-weight:600; margin-bottom:14px">
-            <i class="ti ti-list" style="color:#0F6E56;"></i> Registros del Día
-          </h3>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span style="font-size:12px; color:var(--color-text-secondary)" id="asistencia-fecha"></span>
-            <button class="btn btn-secondary btn-sm" onclick="limpiarAsistenciaHoy()">
-              <i class="ti ti-trash"></i> Limpiar
-            </button>
-          </div>
-          <div class="timeline" id="lista-asistencia" style="max-height:400px; overflow-y:auto;">
-            <div class="empty-state" style="padding:20px">
-              <i class="ti ti-scan" style="font-size:28px"></i>Sin registros
-            </div>
-          </div>
-        </div>
-      </div>
+<div id="page-asistencia" class="page">
+  <div class="page-header">
+    <div>
+      <h2>Control de Asistencia</h2>
+      <p>Registro de entrada y salida mediante código de barras</p>
     </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+
+    <!-- PANEL IZQUIERDO -->
+    <div>
+
+      <!-- ESCÁNER -->
+      <div class="card">
+        <h3 style="font-size:14px; font-weight:600; margin-bottom:14px">
+          <i class="ti ti-scan" style="color:#0F6E56;"></i>
+          Escanear Código
+        </h3>
+
+        <div class="scanner-area" id="scanner-area" onclick="focusScanInput()">
+
+          <div class="scanner-icon">
+            <i class="ti ti-barcode"></i>
+          </div>
+
+          <p style="font-size:13px; color:var(--color-text-secondary); margin-bottom:16px">
+            Apunta el lector al código del carnet o escribe el código manualmente
+          </p>
+
+          <div class="scanner-input">
+
+            <input
+              type="text"
+              id="scan-input"
+              placeholder="Código de barras..."
+              style="
+                flex:1;
+                padding:8px 12px;
+                border:0.5px solid var(--color-border-secondary,#ccc);
+                border-radius:8px;
+                font-size:13px;
+              "
+              onkeydown="if(event.key==='Enter'){ event.preventDefault(); registrarAsistencia(); }"
+            >
+
+            <button
+              class="btn btn-primary"
+              onclick="registrarAsistencia()"
+            >
+              <i class="ti ti-check"></i>
+            </button>
+
+          </div>
+
+          <div
+            id="scan-focus-indicator"
+            class="scan-focus-indicator inactive"
+            style="margin-top:12px"
+          >
+            <div
+              class="scan-pulse inactive"
+              id="scan-pulse"
+            ></div>
+
+            <span id="scan-focus-text">
+              Haz clic aquí para activar el escáner
+            </span>
+          </div>
+
+        </div>
+
+        <div
+          id="scan-result"
+          style="
+            display:none;
+            padding:14px;
+            border-radius:10px;
+            margin-top:8px;
+            border:0.5px solid;
+          "
+        ></div>
+
+      </div>
+
+      <!-- REGISTRO MANUAL -->
+      <div class="card">
+
+        <h3 style="font-size:14px; font-weight:600; margin-bottom:14px">
+          <i class="ti ti-keyboard" style="color:#0F6E56;"></i>
+          Registro Manual
+        </h3>
+
+        <div style="display:flex; gap:8px">
+
+          <select
+            id="manual-estudiante"
+            style="
+              flex:1;
+              padding:8px 10px;
+              border:0.5px solid var(--color-border-secondary,#ccc);
+              border-radius:8px;
+              font-size:13px;
+              background:var(--color-background-primary,white);
+            "
+          >
+            <option value="">
+              Seleccionar estudiante...
+            </option>
+          </select>
+
+          <select
+            id="manual-tipo"
+            style="
+              padding:8px 10px;
+              border:0.5px solid var(--color-border-secondary,#ccc);
+              border-radius:8px;
+              font-size:13px;
+              background:var(--color-background-primary,white);
+            "
+          >
+            <option value="entrada">Entrada</option>
+            <option value="salida">Salida</option>
+          </select>
+
+          <button
+            class="btn btn-primary btn-sm"
+            onclick="registrarManual()"
+          >
+            <i class="ti ti-check"></i>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- PANEL DERECHO -->
+    <div class="card" style="height: fit-content;">
+
+      <h3 style="font-size:14px; font-weight:600; margin-bottom:14px">
+        <i class="ti ti-list" style="color:#0F6E56;"></i>
+        Historial de Asistencia
+      </h3>
+
+      <!-- FILTROS -->
+      <div
+        style="
+          display:flex;
+          gap:8px;
+          flex-wrap:wrap;
+          align-items:center;
+          justify-content:space-between;
+          margin-bottom:12px;
+        "
+      >
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+
+          <select
+            id="filtro-periodo"
+            onchange="renderAsistencia()"
+            style="
+              padding:8px 10px;
+              border:0.5px solid var(--color-border-secondary,#ccc);
+              border-radius:8px;
+              font-size:13px;
+              background:var(--color-background-primary,white);
+            "
+          >
+            <option value="dia">Hoy</option>
+            <option value="semana">Esta Semana</option>
+            <option value="mes">Este Mes</option>
+            <option value="anio">Este Año</option>
+            <option value="todos">Todos</option>
+          </select>
+
+          <select
+            id="filtro-grado"
+            onchange="renderAsistencia()"
+            style="
+              padding:8px 10px;
+              border:0.5px solid var(--color-border-secondary,#ccc);
+              border-radius:8px;
+              font-size:13px;
+              background:var(--color-background-primary,white);
+            "
+          >
+            <option value="">Todos los grados</option>
+            <option>6°</option>
+            <option>7°</option>
+            <option>8°</option>
+            <option>9°</option>
+            <option>10°</option>
+            <option>11°</option>
+          </select>
+
+        </div>
+
+        <div style="display:flex; gap:8px;">
+
+          <button
+            class="btn btn-primary btn-sm"
+            onclick="exportarAsistenciaCSV()"
+          >
+            <i class="ti ti-file-export"></i>
+            CSV
+          </button>
+
+          <button
+            class="btn btn-secondary btn-sm"
+            onclick="limpiarAsistenciaHoy()"
+          >
+            <i class="ti ti-trash"></i>
+            Limpiar
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- FECHA -->
+      <div
+        id="asistencia-fecha"
+        style="
+          margin-bottom:10px;
+          font-size:12px;
+          color:var(--color-text-secondary);
+        "
+      ></div>
+
+      <!-- CONTADOR -->
+      <div
+        id="contador-asistencia"
+        style="
+          margin-bottom:12px;
+          font-size:13px;
+          font-weight:600;
+          color:#0F6E56;
+        "
+      >
+        Total registros: 0
+      </div>
+
+      <!-- LISTA -->
+      <div
+        class="timeline"
+        id="lista-asistencia"
+        style="
+          max-height:500px;
+          overflow-y:auto;
+        "
+      >
+        <div class="empty-state" style="padding:20px">
+          <i class="ti ti-scan" style="font-size:28px"></i>
+          Sin registros
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
 
     <!-- REPORTES -->
     <div id="page-reportes" class="page">

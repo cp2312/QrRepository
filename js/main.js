@@ -27,7 +27,9 @@ import {
   registrarAsistencia,
   registrarManual,
   limpiarAsistenciaHoy,
-  focusScanInput
+  focusScanInput,
+  filtrarAsistencia,
+  exportarAsistenciaCSV
 } from './asistencia.js';
 
 import { exportarCSV } from './reportes.js';
@@ -50,6 +52,8 @@ window.registrarAsistencia = registrarAsistencia;
 window.registrarManual = registrarManual;
 window.limpiarAsistenciaHoy = limpiarAsistenciaHoy;
 window.focusScanInput = focusScanInput;
+window.filtrarAsistencia = filtrarAsistencia;
+window.exportarAsistenciaCSV = exportarAsistenciaCSV;
 window.exportarCSV = exportarCSV;
 window.renderTabla = renderTabla;
 

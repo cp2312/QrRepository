@@ -81,6 +81,9 @@ export function renderAsistencia() {
   const lista    = document.getElementById('lista-asistencia');
   const hoyItems = state.asistencia.filter(a => a.fecha === hoy);
   document.getElementById('asistencia-fecha').textContent = 'Fecha: ' + fechaLegible(hoy);
+  document.getElementById('contador-asistencia')
+  .textContent =
+  `Total registros: ${hoyItems.length}`;
   if (!hoyItems.length) {
     lista.innerHTML = `<div class="empty-state" style="padding:20px"><i class="ti ti-scan" style="font-size:28px"></i>Sin registros hoy</div>`;
     return;
@@ -164,4 +167,91 @@ function _mostrarResultado(el, tipo, html) {
   el.style.background  = s.bg;
   el.style.borderColor = s.border;
   el.innerHTML         = html;
+}
+function obtenerAsistenciaFiltrada() {
+
+  const filtro =
+    document.getElementById('filtro-periodo')?.value || 'dia';
+
+  const hoy = new Date();
+
+  return state.asistencia.filter(a => {
+
+    const fechaRegistro = new Date(a.fecha);
+
+    switch (filtro) {
+
+      case 'dia':
+        return a.fecha === getFechaHoy();
+
+      case 'semana': {
+
+        const inicioSemana = new Date(hoy);
+        inicioSemana.setDate(
+          hoy.getDate() - hoy.getDay()
+        );
+
+        return fechaRegistro >= inicioSemana;
+      }
+
+      case 'mes':
+        return (
+          fechaRegistro.getMonth() === hoy.getMonth() &&
+          fechaRegistro.getFullYear() === hoy.getFullYear()
+        );
+
+      case 'anio':
+        return (
+          fechaRegistro.getFullYear() === hoy.getFullYear()
+        );
+
+      default:
+        return true;
+    }
+
+  });
+
+}
+export function exportarAsistenciaCSV() {
+
+  const datos = obtenerAsistenciaFiltrada();
+
+  if (!datos.length) {
+    alert('No hay registros para exportar');
+    return;
+  }
+
+  const encabezado =
+    'Fecha,Hora,Nombre,Grado,Tipo\n';
+
+  const filas = datos.map(a =>
+    `"${a.fecha}","${a.hora}","${a.nombre}","${a.grado}","${a.tipo}"`
+  );
+
+  const csv =
+    encabezado + filas.join('\n');
+
+  const blob = new Blob(
+    [csv],
+    { type: 'text/csv;charset=utf-8;' }
+  );
+
+  const url =
+    URL.createObjectURL(blob);
+
+  const link =
+    document.createElement('a');
+
+  link.href = url;
+
+  link.download =
+    `asistencia_${Date.now()}.csv`;
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  document.body.removeChild(link);
+
+  URL.revokeObjectURL(url);
 }
