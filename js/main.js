@@ -17,8 +17,11 @@ import {
   buscarCarnet,
   verCarnet,
   imprimirCarnet,
+  imprimirTodosCarnets,
   registrarEntradaDirecta
 } from './carnets.js';
+
+window.imprimirTodosCarnets = imprimirTodosCarnets;
 
 import {
   registrarAsistencia,
@@ -41,6 +44,7 @@ window.eliminarEstudiante = eliminarEstudiante;
 window.buscarCarnet = buscarCarnet;
 window.verCarnet = verCarnet;
 window.imprimirCarnet = imprimirCarnet;
+window.imprimirTodosCarnets = imprimirTodosCarnets;
 window.registrarEntradaDirecta = registrarEntradaDirecta;
 window.registrarAsistencia = registrarAsistencia;
 window.registrarManual = registrarManual;
@@ -48,15 +52,7 @@ window.limpiarAsistenciaHoy = limpiarAsistenciaHoy;
 window.focusScanInput = focusScanInput;
 window.exportarCSV = exportarCSV;
 window.renderTabla = renderTabla;
-import {
-  buscarCarnet,
-  verCarnet,
-  imprimirCarnet,
-  imprimirTodosCarnets,
-  registrarEntradaDirecta
-} from './carnets.js';
 
-window.imprimirTodosCarnets = imprimirTodosCarnets;
 
 /* ==========================================
    INICIALIZACIÓN DEL SISTEMA
