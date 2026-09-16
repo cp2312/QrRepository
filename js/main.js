@@ -30,7 +30,8 @@ import {
   limpiarAsistenciaHoy,
   focusScanInput,
   filtrarAsistencia,
-  exportarAsistenciaCSV
+  exportarAsistenciaCSV,
+  exportarAsistenciaExcel
 } from './asistencia.js';
 
 import { exportarCSV } from './reportes.js';
@@ -56,6 +57,7 @@ window.limpiarAsistenciaHoy = limpiarAsistenciaHoy;
 window.focusScanInput = focusScanInput;
 window.filtrarAsistencia = filtrarAsistencia;
 window.exportarAsistenciaCSV = exportarAsistenciaCSV;
+window.exportarAsistenciaExcel = exportarAsistenciaExcel;
 window.exportarCSV = exportarCSV;
 window.renderTabla = renderTabla;
 

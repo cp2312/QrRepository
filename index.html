@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistema de Carnetización — I.E.T. Santa Cruz de Motavita</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="icon" type="image/png" href="./escudo.png">
@@ -470,6 +471,15 @@
           >
             <i class="ti ti-file-export"></i>
             CSV
+          </button>
+
+          <button
+            class="btn btn-primary btn-sm"
+            onclick="exportarAsistenciaExcel()"
+            title="Exporta Hoy, Mes y Año a un Excel, filtrado por el curso seleccionado arriba"
+          >
+            <i class="ti ti-file-spreadsheet"></i>
+            Excel
           </button>
 
           <button

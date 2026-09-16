@@ -265,6 +265,116 @@ export function exportarAsistenciaCSV() {
 
   URL.revokeObjectURL(url);
 }
+export function exportarAsistenciaExcel() {
+  if (typeof XLSX === 'undefined') {
+    showToast('No se pudo cargar el módulo de Excel (sin conexión)', 'error');
+    return;
+  }
+  if (!state.estudiantes.length) {
+    alert('No hay estudiantes registrados');
+    return;
+  }
+
+  const grado = document.getElementById('filtro-grado')?.value || '';
+  const hoy   = getFechaHoy();
+
+  const wb = XLSX.utils.book_new();
+  _agregarHojaDia(wb, 'Hoy', hoy, grado);
+  _agregarHojaRango(wb, 'Mes', _inicioMes(), hoy, grado);
+  _agregarHojaRango(wb, 'Año', _inicioAnio(), hoy, grado);
+
+  const sufijoCurso = grado ? '_' + grado.replace('°', '') : '';
+  XLSX.writeFile(wb, `asistencia${sufijoCurso}_${hoy}.xlsx`);
+}
+
+function _inicioMes() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-01';
+}
+
+function _inicioAnio() {
+  return new Date().getFullYear() + '-01-01';
+}
+
+function _rosterCurso(grado) {
+  return state.estudiantes
+    .filter(e => (!grado || e.grado === grado) && e.activo !== false)
+    .sort((a, b) => (a.apellidos + a.nombres).localeCompare(b.apellidos + b.nombres));
+}
+
+function _agregarHojaDia(wb, nombreHoja, fecha, grado) {
+  const roster = _rosterCurso(grado);
+  const registrosHoy = state.asistencia.filter(a => a.fecha === fecha && (!grado || a.grado === grado));
+
+  const horasPorEstudiante = {};
+  registrosHoy.forEach(r => {
+    const h = (horasPorEstudiante[r.estudianteId] ||= {});
+    if (r.tipo === 'entrada') h.entrada = r.hora; else h.salida = r.hora;
+  });
+
+  const vinieron = roster.filter(e => horasPorEstudiante[e.id]?.entrada).length;
+  const faltaron = roster.length - vinieron;
+
+  const rows = [
+    [`Reporte de Asistencia - ${nombreHoja}`],
+    [`Fecha: ${fechaLegible(fecha)}`],
+    [`Curso: ${grado || 'Todos'}`],
+    [],
+    ['Total estudiantes', roster.length, 'Asistieron', vinieron, 'Faltaron', faltaron],
+    [],
+    ['Estado', 'Nombre', 'Documento', 'Grado', 'Grupo', 'Hora Entrada', 'Hora Salida']
+  ];
+
+  roster.forEach(e => {
+    const h = horasPorEstudiante[e.id] || {};
+    rows.push([h.entrada ? 'Asistió' : 'Faltó', `${e.nombres} ${e.apellidos}`, e.documento, e.grado, e.grupo, h.entrada || '', h.salida || '']);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 9 }, { wch: 28 }, { wch: 14 }, { wch: 7 }, { wch: 7 }, { wch: 12 }, { wch: 12 }];
+  XLSX.utils.book_append_sheet(wb, ws, nombreHoja);
+}
+
+function _agregarHojaRango(wb, nombreHoja, desde, hasta, grado) {
+  const roster = _rosterCurso(grado);
+  const registros = state.asistencia
+    .filter(a => a.fecha >= desde && a.fecha <= hasta && (!grado || a.grado === grado))
+    .sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
+
+  const fechasConRegistro = [...new Set(registros.map(r => r.fecha))].sort();
+
+  const rows = [
+    [`Reporte de Asistencia - ${nombreHoja}`],
+    [`Curso: ${grado || 'Todos'}`],
+    [`Periodo: ${fechaLegible(desde)} a ${fechaLegible(hasta)}`],
+    [],
+    ['Total estudiantes en curso', roster.length, 'Días con registro', fechasConRegistro.length, 'Total registros', registros.length],
+    [],
+    ['Resumen por día'],
+    ['Fecha', 'Vinieron', 'Faltaron', 'Total curso']
+  ];
+
+  fechasConRegistro.forEach(f => {
+    const entradasDia = new Set(
+      registros.filter(r => r.fecha === f && r.tipo === 'entrada').map(r => r.estudianteId)
+    );
+    const vinieron = roster.filter(e => entradasDia.has(e.id)).length;
+    rows.push([fechaLegible(f), vinieron, roster.length - vinieron, roster.length]);
+  });
+
+  rows.push([]);
+  rows.push(['Detalle de registros']);
+  rows.push(['Fecha', 'Hora', 'Nombre', 'Documento', 'Grado', 'Grupo', 'Tipo']);
+  registros.forEach(r => {
+    const est = state.estudiantes.find(e => e.id === r.estudianteId);
+    rows.push([fechaLegible(r.fecha), r.hora, r.nombre, est?.documento || '', r.grado, est?.grupo || '', r.tipo === 'entrada' ? 'Entrada' : 'Salida']);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 12 }, { wch: 10 }, { wch: 28 }, { wch: 14 }, { wch: 8 }, { wch: 8 }, { wch: 10 }];
+  XLSX.utils.book_append_sheet(wb, ws, nombreHoja);
+}
+
 export function filtrarAsistencia() {
 
   const lista = document.getElementById('lista-asistencia');
