@@ -59,7 +59,7 @@ window._fs = {
   orderBy
 };
 
-const ADMIN_EMAIL = 'juanjos2621@gmail.com';
+const ADMIN_EMAIL = 'motavita@gmail.com';
 
 // Estado global para main.js
 window.firebaseReady = false;
