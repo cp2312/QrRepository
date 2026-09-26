@@ -77,6 +77,24 @@ function _renderTablaCompleta() {
     || '<tr><td colspan="6" style="text-align:center;color:var(--color-text-secondary);padding:20px">Sin estudiantes registrados</td></tr>';
 }
 
+export function respaldarDatos() {
+  if (!state.estudiantes.length && !state.asistencia.length) {
+    alert('No hay datos para respaldar.');
+    return;
+  }
+  const backup = {
+    generado:    new Date().toISOString(),
+    estudiantes: state.estudiantes,
+    asistencia:  state.asistencia
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'respaldo_iet_' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 export function exportarCSV() {
   if (!state.estudiantes.length) { alert('No hay datos para exportar.'); return; }
   const headers = ['Nombres', 'Apellidos', 'Documento', 'Grado', 'Grupo', 'Código', 'Acudiente', 'Teléfono'];

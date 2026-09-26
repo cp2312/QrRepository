@@ -46,7 +46,6 @@ export function renderCarnets() {
             <div class="carnet-school-sub">de Motavita</div>
             <div class="carnet-school-type">Educativa Técnica</div>
           </div>
-          <div class="carnet-year-badge">2026</div>
         </div>
         <div class="carnet-divider"></div>
         <div class="carnet-body">
@@ -116,7 +115,6 @@ export function imprimirCarnet(id) {
   .carnet-school-name{color:#FFD700;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;line-height:1.15;}
   .carnet-school-sub{color:#FFD700;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;}
   .carnet-school-type{color:rgba(255,255,255,0.7);font-size:9px;text-transform:uppercase;letter-spacing:0.1em;margin-top:3px;}
-  .carnet-year-badge{background:#C41E3A;color:white;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .carnet-divider{height:3px;background:linear-gradient(90deg,#C41E3A,#D4A017,#1B4F8A);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .carnet-body{padding:14px;display:flex;gap:12px;align-items:flex-start;}
   .carnet-photo-area{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
@@ -144,7 +142,6 @@ export function imprimirCarnet(id) {
       <div class="carnet-school-sub">de Motavita</div>
       <div class="carnet-school-type">Educativa Técnica</div>
     </div>
-    <div class="carnet-year-badge">2026</div>
   </div>
   <div class="carnet-divider"></div>
   <div class="carnet-body">
@@ -221,10 +218,6 @@ export function imprimirTodosCarnets() {
               Educativa Técnica
             </div>
           </div>
-
-          <div class="carnet-year-badge">
-            2026
-          </div>
         </div>
 
         <div class="carnet-divider"></div>
@@ -298,7 +291,6 @@ export function imprimirTodosCarnets() {
   .carnet-school-name{color:#FFD700;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;line-height:1.15;}
   .carnet-school-sub{color:#FFD700;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;}
   .carnet-school-type{color:rgba(255,255,255,0.7);font-size:9px;text-transform:uppercase;letter-spacing:0.1em;margin-top:3px;}
-  .carnet-year-badge{background:#C41E3A;color:white;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .carnet-divider{height:3px;background:linear-gradient(90deg,#C41E3A,#D4A017,#1B4F8A);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .carnet-body{padding:14px;display:flex;gap:12px;align-items:flex-start;}
   .carnet-photo-area{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}

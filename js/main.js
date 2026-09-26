@@ -34,7 +34,7 @@ import {
   exportarAsistenciaExcel
 } from './asistencia.js';
 
-import { exportarCSV } from './reportes.js';
+import { exportarCSV, respaldarDatos } from './reportes.js';
 
 /* ==========================================
    FUNCIONES GLOBALES PARA HTML
@@ -59,6 +59,7 @@ window.filtrarAsistencia = filtrarAsistencia;
 window.exportarAsistenciaCSV = exportarAsistenciaCSV;
 window.exportarAsistenciaExcel = exportarAsistenciaExcel;
 window.exportarCSV = exportarCSV;
+window.respaldarDatos = respaldarDatos;
 window.renderTabla = renderTabla;
 
 

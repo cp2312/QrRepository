@@ -16,8 +16,7 @@ import {
 
 import {
   getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
+  signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   browserLocalPersistence,
@@ -46,8 +45,6 @@ await setPersistence(
   browserLocalPersistence
 );
 
-const provider = new GoogleAuthProvider();
-
 window._db = db;
 window._auth = auth;
 
@@ -69,27 +66,46 @@ window.firebaseReady = false;
 
 let loginEnProceso = false;
 
-window.loginGoogle = async () => {
+const MENSAJES_ERROR = {
+  'auth/invalid-email':        'Correo inválido.',
+  'auth/user-not-found':       'Correo o contraseña incorrectos.',
+  'auth/wrong-password':       'Correo o contraseña incorrectos.',
+  'auth/invalid-credential':   'Correo o contraseña incorrectos.',
+  'auth/too-many-requests':    'Demasiados intentos. Intenta de nuevo más tarde.',
+  'auth/user-disabled':        'Esta cuenta está deshabilitada.'
+};
+
+window.loginEmail = async () => {
 
   if (loginEnProceso) return;
 
-  loginEnProceso = true;
+  const emailInput    = document.getElementById('login-email');
+  const passwordInput = document.getElementById('login-password');
+  const btn           = document.getElementById('btn-login');
+  const errorBox       = document.getElementById('login-error');
 
-  const btn = document.getElementById('btn-google');
+  const email    = (emailInput.value || '').trim();
+  const password = passwordInput.value || '';
+
+  if (!email || !password) return;
+
+  loginEnProceso = true;
 
   try {
 
     btn.disabled = true;
+    errorBox.style.display = 'none';
 
-    await signInWithPopup(auth, provider);
+    await signInWithEmailAndPassword(auth, email, password);
 
   } catch (e) {
 
     console.error(e);
 
-    if (e.code !== 'auth/cancelled-popup-request') {
-      alert('Error al iniciar sesión: ' + e.message);
-    }
+    errorBox.textContent = MENSAJES_ERROR[e.code] || 'Error al iniciar sesión: ' + e.message;
+    errorBox.style.display = 'block';
+    passwordInput.value = '';
+    passwordInput.focus();
 
   } finally {
 
@@ -118,9 +134,9 @@ onAuthStateChanged(
 
           await signOut(auth);
 
-          document.getElementById(
-            'login-error'
-          ).style.display = 'block';
+          const errorBox = document.getElementById('login-error');
+          errorBox.textContent = 'Acceso denegado. Solo el administrador autorizado puede ingresar.';
+          errorBox.style.display = 'block';
 
           return;
         }
@@ -195,8 +211,11 @@ onAuthStateChanged(
 );
 
 document
-  .getElementById('btn-google')
+  .getElementById('login-form')
   .addEventListener(
-    'click',
-    window.loginGoogle
+    'submit',
+    (e) => {
+      e.preventDefault();
+      window.loginEmail();
+    }
   );

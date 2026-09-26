@@ -282,6 +282,7 @@ export function exportarAsistenciaExcel() {
   _agregarHojaDia(wb, 'Hoy', hoy, grado);
   _agregarHojaRango(wb, 'Mes', _inicioMes(), hoy, grado);
   _agregarHojaRango(wb, 'Año', _inicioAnio(), hoy, grado);
+  wb.Workbook = { Views: [{ activeTab: 0 }] };
 
   const sufijoCurso = grado ? '_' + grado.replace('°', '') : '';
   XLSX.writeFile(wb, `asistencia${sufijoCurso}_${hoy}.xlsx`);
