@@ -35,6 +35,7 @@ import {
 } from './asistencia.js';
 
 import { exportarCSV, respaldarDatos } from './reportes.js';
+import { importarSIMAT } from './import_simat.js';
 
 /* ==========================================
    FUNCIONES GLOBALES PARA HTML
@@ -60,6 +61,7 @@ window.exportarAsistenciaCSV = exportarAsistenciaCSV;
 window.exportarAsistenciaExcel = exportarAsistenciaExcel;
 window.exportarCSV = exportarCSV;
 window.respaldarDatos = respaldarDatos;
+window.importarSIMAT = importarSIMAT;
 window.renderTabla = renderTabla;
 
 

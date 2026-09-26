@@ -145,9 +145,14 @@
           <h2>Gestión de Estudiantes</h2>
           <p>Registro y administración de la información estudiantil</p>
         </div>
-        <button class="btn btn-primary" onclick="openModal()">
-          <i class="ti ti-plus"></i> Registrar Estudiante
-        </button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="openModal()">
+            <i class="ti ti-plus"></i> Registrar Estudiante
+          </button>
+          <button class="btn btn-secondary" onclick="importarSIMAT()" title="Registro único: carga los 206 estudiantes del listado SIMAT 2026 (grados 6° a 11°)">
+            <i class="ti ti-upload"></i> Importar SIMAT
+          </button>
+        </div>
       </div>
       <div class="card">
         <div class="search-bar">
